@@ -1,14 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
 """
 Django settings for djangoProject project.
 
