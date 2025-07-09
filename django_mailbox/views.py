@@ -1,3 +1,4 @@
+
 from django.http import HttpResponse
 from rest_framework import viewsets
 
@@ -53,4 +54,3 @@ def index(request):
 
     # 渲染页面，传递表单实例到模板
     return render(request, "django_mailbox/email.html", {'form': form})
-
