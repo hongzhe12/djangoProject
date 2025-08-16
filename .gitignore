@@ -2,3 +2,5 @@
 venv
 *.sqlite3
 test.py
+*.pyc
+__pycache__/*
