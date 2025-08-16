@@ -106,6 +106,9 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 ### 常用监控命令
 ```bash
+# 检查注册任务
+docker exec mysite-celerybeat celery -A djangoProject inspect registered
+
 # 查看Worker状态
 celery -A djangoProject status
 

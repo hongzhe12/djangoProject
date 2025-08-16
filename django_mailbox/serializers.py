@@ -13,14 +13,13 @@ class BaseMetricSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-def get_metric_serializer(model):
+def get_metric_serializer(model_cls):
     '''
     根据模型动态生成序列化器
     '''
     class DynamicMetricSerializer(BaseMetricSerializer):
         class Meta:
-            # noinspection PyUnresolvedReferences
-            model = model
+            model = model_cls
             fields = '__all__'
 
     return DynamicMetricSerializer
@@ -32,4 +31,10 @@ class EmailConfigSerializer(BaseMetricSerializer):
     class Meta:
         model = EmailConfig
         fields = '__all__'
+
+
+class SendMailSerializer(serializers.Serializer):
+    subject = serializers.CharField(max_length=200)
+    content = serializers.CharField()
+    filepath = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 

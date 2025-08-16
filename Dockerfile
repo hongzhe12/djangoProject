@@ -26,3 +26,4 @@ COPY . .
 
 # 设置环境变量
 ENV DJANGO_SETTINGS_MODULE=djangoProject.settings
+

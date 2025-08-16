@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -142,68 +143,83 @@
         }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h3>邮件发送配置</h3>
-        </div>
-        <div class="card-body">
-            {% if success_message %}
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h3>邮件发送配置</h3>
+            </div>
+            <div class="card-body">
+                {% if success_message %}
                 <div class="success-message">{{ success_message }}</div>
-            {% endif %}
+                {% endif %}
 
-            <form id="emailForm" action="{% url 'email_config' %}" method="post">
-                {% csrf_token %}
+                <form id="emailForm" action="{% url 'django_mailbox:email' %}" method="post">
+                    {% csrf_token %}
+                    
+                    <!-- 新增的name字段 -->
+                    <div class="form-group">
+                        <label for="id_name">配置名称</label>
+                        <input type="text" id="id_name" name="name"
+                                value="{{ form.name.value|default:'' }}" required
+                                class="form-control{% if form.name.errors %} error{% endif %}"
+                                placeholder="例如：生产环境邮件配置">
+                        {% if form.name.errors %}
+                        <div class="error-message">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
 
-                <div class="form-group">
-                    <label for="sender_username">发件人邮箱</label>
-                    <input type="email" id="sender_username" name="sender_username"
-                           value="{{ form.sender_username.value|default:'' }}" required
-                           class="form-control{% if form.sender_username.errors %} error{% endif %}"
-                           placeholder="your.email@example.com">
-                    {% if form.sender_username.errors %}
+                    <div class="form-group">
+                        <label for="sender_username">发件人邮箱</label>
+                        <input type="email" id="sender_username" name="sender_username"
+                            value="{{ form.sender_username.value|default:'' }}" required
+                            class="form-control{% if form.sender_username.errors %} error{% endif %}"
+                            placeholder="your.email@example.com">
+                        {% if form.sender_username.errors %}
                         <div class="error-message">{{ form.sender_username.errors.0 }}</div>
-                    {% endif %}
-                </div>
+                        {% endif %}
+                    </div>
 
-                <div class="form-group">
-                    <label for="sender_pwd">发件人密码</label>
-                    <input type="text" id="sender_pwd" name="sender_pwd"
-                           value="{{ form.sender_pwd.value|default:'' }}" required
-                           class="form-control{% if form.sender_password.errors %} error{% endif %}"
-                           placeholder="输入密码">
-                    {% if form.sender_password.errors %}
+                    <div class="form-group">
+                        <label for="sender_pwd">发件人密码</label>
+                        <input type="text" id="sender_pwd" name="sender_pwd"
+                            value="{{ form.sender_pwd.value|default:'' }}" required
+                            class="form-control{% if form.sender_password.errors %} error{% endif %}"
+                            placeholder="输入密码">
+                        {% if form.sender_password.errors %}
                         <div class="error-message">{{ form.sender_password.errors.0 }}</div>
-                    {% endif %}
-                </div>
+                        {% endif %}
+                    </div>
 
-                <div class="form-group">
-                    <label for="receive_list">收件人邮箱列表</label>
-                    <textarea id="receive_list" name="receive_list" rows="4"
-                              class="form-control textarea-control{% if form.receive_list.errors %} error{% endif %}" placeholder="请输入收件人邮箱，每行一个">{{ form.receive_list.value }}</textarea>
-                    <small style="color: #999; font-size: 0.8rem; display: block; margin-top: 5px;">
-                        每行输入一个邮箱地址
-                    </small>
-                    {% if form.receive_list.errors %}
+                    <div class="form-group">
+                        <label for="receive_list">收件人邮箱列表</label>
+                        <textarea id="receive_list" name="receive_list" rows="4"
+                            class="form-control textarea-control{% if form.receive_list.errors %} error{% endif %}"
+                            placeholder="请输入收件人邮箱，每行一个">{{ form.receive_list.value }}</textarea>
+                        <small style="color: #999; font-size: 0.8rem; display: block; margin-top: 5px;">
+                            每行输入一个邮箱地址
+                        </small>
+                        {% if form.receive_list.errors %}
                         <div class="error-message">{{ form.receive_list.errors.0 }}</div>
-                    {% endif %}
-                </div>
+                        {% endif %}
+                    </div>
 
-                <button type="submit" class="btn">提交配置</button>
-            </form>
-            {% if messages %}
+                    <button type="submit" class="btn">提交配置</button>
+                </form>
+                {% if messages %}
                 <ul class="messages">
                     {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
+                    <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                        {% endfor %}
                 </ul>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
-<footer class="footer">
-    <p>邮件系统 | <a href="#">使用帮助</a> | <a href="#">隐私政策</a></p>
-</footer>
+    <footer class="footer">
+        <p>邮件系统 | <a href="#">使用帮助</a> | <a href="#">隐私政策</a></p>
+    </footer>
 </body>
+
 </html>

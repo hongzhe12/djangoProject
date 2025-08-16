@@ -1,19 +1,22 @@
-
-from django.http import HttpResponse
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.views.decorators.csrf import csrf_exempt
+from django_mailbox.form import EmailConfigForm
+from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from .models import EmailConfig
 # 请替换为实际的模型导入
 from .serializers import (
-    EmailConfigSerializer
+    EmailConfigSerializer,
+    SendMailSerializer
 )
+from .utils import send_email_with_attachment
+import logging
 
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.views.decorators.csrf import csrf_exempt
-
-from .form import EmailConfigForm
-from .models import EmailConfig
-
+logger = logging.getLogger(__name__)
 
 class BaseModelViewSet(viewsets.ModelViewSet):
     '''
@@ -29,28 +32,48 @@ class EmailConfigViewSet(BaseModelViewSet):
     serializer_class = EmailConfigSerializer
 
 
-@csrf_exempt
+@csrf_exempt  # 临时保留以便调试
 def index(request):
-    # 尝试获取最新的邮件配置，若无则创建新实例
     try:
         email_config = EmailConfig.objects.latest('updated_at')
+        logger.info(f"现有配置: {email_config.__dict__}")
     except EmailConfig.DoesNotExist:
         email_config = None
+        logger.info("无现有配置")
 
-    # 处理POST请求（表单提交）
     if request.method == 'POST':
+        logger.info(f"收到POST数据: {request.POST}")
         form = EmailConfigForm(request.POST, instance=email_config)
-        # 添加调试输出
-        print("表单是否有效:", form.is_valid())
+        
         if form.is_valid():
-            form.save()
-            messages.success(request, "邮件配置已成功更新！")
-            return redirect('email_config')
+            instance = form.save()
+            logger.info(f"保存成功! 新实例ID: {instance.id}")
+            messages.success(request, "配置已保存")
+            return redirect('django_mailbox:email')
         else:
-            print("表单错误:", form.errors)
+            logger.error(f"表单无效: {form.errors}")
     else:
-        # 处理GET请求，初始化表单并加载现有数据
         form = EmailConfigForm(instance=email_config)
 
-    # 渲染页面，传递表单实例到模板
     return render(request, "django_mailbox/email.html", {'form': form})
+
+
+class SendMailAPIView(APIView):
+    @csrf_exempt
+    def post(self, request):
+        # 打印当前路径
+        serializer = SendMailSerializer(data=request.data)
+        if serializer.is_valid():
+            subject = serializer.validated_data['subject']
+            content = serializer.validated_data['content']
+            filepath = serializer.validated_data.get('filepath')
+            # 打印当前路径
+            if filepath:
+                import os
+                print('邮件附件绝对路径:', os.path.abspath(filepath))
+            try:
+                send_email_with_attachment(subject, content, filepath)
+                return Response({"detail": "邮件发送成功"})
+            except Exception as e:
+                return Response({"detail": f"邮件发送失败: {e}"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

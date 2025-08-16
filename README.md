@@ -8,4 +8,6 @@ docker save \
   postgres:15-alpine \
   nginx:latest \
   > all_images.tar
+
+docker compose down && docker compose up --build -d
 ```

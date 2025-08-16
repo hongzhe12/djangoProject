@@ -21,14 +21,7 @@ class EmailConfigForm(forms.ModelForm):
 
     class Meta:
         model = EmailConfig
-        fields = ['sender_username', 'sender_pwd', 'receive_list', 'name']
-        labels = {
-            'sender_username': '发件人邮箱',
-            'sender_pwd': '发件人密码',  # 新增标签定义
-        }
-        field_classes = {
-            'sender_username': forms.EmailField,  # 使用内置EmailField验证
-        }
+        fields = ['sender_pwd', 'receive_list', 'name','sender_username']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

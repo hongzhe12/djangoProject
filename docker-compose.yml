@@ -11,6 +11,8 @@ services:
       - mysite_network
     expose:
       - "5432"
+  
+  
 
   web:
     container_name: mysite-django
@@ -26,6 +28,8 @@ services:
       - mysite_network
     env_file:
       - ./postgres/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0  # 添加Redis连接环境变量
 
   nginx:
     container_name: mysite-nginx
@@ -44,9 +48,61 @@ services:
     networks:
       - mysite_network
 
+  redis:
+    image: redis:7-alpine
+    container_name: mysite-redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - mysite_network
+    expose:
+      - "6379"
+
+  celery_worker:
+    container_name: mysite-celery
+    build: .
+    command: celery -A djangoProject worker --loglevel=info --concurrency=4
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+      - postgres
+      - web
+    networks:
+      - mysite_network
+    env_file:
+      - ./postgres/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    healthcheck:
+      test: ["CMD", "celery", "-A", "djangoProject", "inspect", "ping", "-t", "10"]
+      interval: 30s
+      timeout: 20s
+      start_period: 40s
+      retries: 3
+
+
+  celery_beat:
+    container_name: mysite-celerybeat
+    build: .
+    command: celery -A djangoProject beat --loglevel=info
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+      - postgres
+      - web
+    networks:
+      - mysite_network
+    env_file:
+      - ./postgres/.env
+
 volumes:
   postgres_data:
     name: "postgres_data"
+  redis_data:
+    name: "redis_data"
 
 networks:
   mysite_network:

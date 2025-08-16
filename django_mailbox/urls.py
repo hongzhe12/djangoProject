@@ -1,14 +1,10 @@
-
-
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-
-from . import views
 from .views import (
-    EmailConfigViewSet, index
+    SendMailAPIView, EmailConfigViewSet, index
 )
 
-
+app_name = 'django_mailbox'
 router = DefaultRouter()
 
 # 自动注册视图集路由
@@ -16,9 +12,9 @@ router = DefaultRouter()
 router.register(r'emailconfig', EmailConfigViewSet, basename='emailconfig')
 
 
-urlpatterns = [
-    path('', index, name='email_config'),
-    path('api/', include(router.urls)),
 
-    # 在此添加其他自定义路由
+urlpatterns = [
+    path('send_mail/', SendMailAPIView.as_view()),
+    path('email/', index, name='email'),
+    path('', include(router.urls)),
 ]

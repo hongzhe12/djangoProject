@@ -7,9 +7,9 @@ class EmailConfig(models.Model):
     """邮件配置模型，存储邮件发送相关配置"""
     name = models.CharField(
         max_length=100,
-        unique=True,
         verbose_name="配置名称",
-        help_text="用于标识该邮件配置的名称或方案名"
+        help_text="用于标识该邮件配置的名称或方案名",
+        blank=True
     )
     sender_username = models.EmailField(
         max_length=254,
@@ -38,7 +38,6 @@ class EmailConfig(models.Model):
     class Meta:
         verbose_name = "邮件配置"
         verbose_name_plural = "邮件配置"
-        unique_together = ("sender_username",)  # 确保发件人唯一
 
     def __str__(self):
         return f"邮件配置: {self.name}"

@@ -1,12 +1,3 @@
-
-
-
-
-
-
-
-
-
 import os
 import smtplib
 import time
@@ -15,10 +6,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from django_mailbox.models import EmailConfig
-
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 def send_email_with_attachment(subject: str, content: str, filepath: str = None):
@@ -51,7 +38,7 @@ def send_email_with_attachment(subject: str, content: str, filepath: str = None)
         msg.attach(part)
 
         if filepath is None:
-            logger.info('没有附件')
+            print("没有附件")
         else:
             part = MIMEApplication(open(filepath, 'rb').read())
             filename = os.path.split(filepath)[-1]
@@ -60,7 +47,8 @@ def send_email_with_attachment(subject: str, content: str, filepath: str = None)
             msg.attach(part)
 
         smtp.sendmail(_user, recipient, msg.as_string())
-        logger.info(f"已发送给: {recipient}")
+
+        print(f"已发送给: {recipient}")
         time.sleep(1)  # 适当间隔避免发送频率过高
         smtp.quit()
-        logger.info(f"全部发送完成！共发送 {len(recipients)} 人")
+        print(f"全部发送完成！共发送 {len(recipients)} 人")

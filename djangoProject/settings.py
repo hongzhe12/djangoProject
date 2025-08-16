@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
-
+from celery.schedules import crontab 
 # ==================== svg图标加载问题 ====================
 import mimetypes
 mimetypes.add_type("image/svg+xml", ".svg", True)
@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ustm8i=ze@9en0dknu4o3-k$o51$^)pz_^irj2hwebixayi!0x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_mailbox',
     'django_celery_beat',
-    'django_celery_results'
+    'django_celery_results',
+    'rest_framework',
 ]
 
 # ==================== 中间件配置 ====================
@@ -152,7 +153,7 @@ else:
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = ('*')
-CSRF_TRUSTED_ORIGINS = ['http://192.168.162.206:8080', 'http://192.168.162.206:8000', 'http://192.168.18.129:8080']
+CSRF_TRUSTED_ORIGINS = ['http://192.168.64.128:8000']
 CSRF_COOKIE_SECURE = True
 
 # ==================== 默认主键字段类型配置 ====================
@@ -162,7 +163,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ==================== Celery 配置 ====================
 # Celery 消息代理配置 - 使用Redis作为任务队列
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"  # Redis服务器地址和数据库编号
+CELERY_BROKER_URL = "redis://redis:6379/0"  # Redis服务器地址和数据库编号
 
 # 时区配置
 CELERY_TIMEZONE = TIME_ZONE  # 继承Django项目的时区设置(Asia/Shanghai)
@@ -186,7 +187,15 @@ CELERY_TASK_TIME_LIMIT = 5  # 单个任务最大执行时间(秒)，超时自动
 # }
 
 # 定时任务调度器配置
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'  # 使用数据库存储调度计划
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'  # 使用数据库存储调度计划
+
+CELERY_BEAT_SCHEDULE = {
+    'send-daily-report': {
+        'task': 'django_mailbox.tasks.send_daily_report',
+        'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
+        'args': ("每日报告",) 
+    },
+}
 
 # 可选性能优化配置（可根据需要添加）
 CELERY_WORKER_CONCURRENCY = 4  # Worker并发数，默认是CPU核心数
