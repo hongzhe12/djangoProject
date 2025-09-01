@@ -3,6 +3,7 @@ __pycache__
 *.py[cod]
 *$py.class
 *.so
+*.pyc
 .Python
 build/
 develop-eggs/
@@ -35,3 +36,7 @@ static/admin/*
 .idea/
 *.swp
 *.swo
+
+celery*
+djangoProject/__pycache__/*
+djangoProject/__pycache__/__init__.cpython-39.pyc

@@ -179,7 +179,7 @@ CELERY_TASK_SERIALIZER = 'json'  # 任务序列化格式
 CELERY_RESULT_SERIALIZER = 'json'  # 结果序列化格式
 
 # 任务执行控制配置
-CELERY_TASK_TIME_LIMIT = 5  # 单个任务最大执行时间(秒)，超时自动终止
+CELERY_TASK_TIME_LIMIT = 60*10  # 单个任务最大执行时间(秒)，超时自动终止
 # CELERY_TASK_ANNOTATIONS = {
 #     'tasks.add': {
 #         'rate_limit': '10/s'  # 对add任务限流，每秒最多执行10次
@@ -196,6 +196,14 @@ CELERY_BEAT_SCHEDULE = {
         'args': ("每日报告",) 
     },
 }
+
+# CELERY_BEAT_SCHEDULE = {
+#     'send-daily-report': {
+#         'task': 'django_mailbox.tasks.get_sparkai_response_task',
+#         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
+#         'args': ("AI对话",) 
+#     },
+# }
 
 # 可选性能优化配置（可根据需要添加）
 CELERY_WORKER_CONCURRENCY = 4  # Worker并发数，默认是CPU核心数
@@ -281,3 +289,20 @@ logging.config.dictConfig(LOGGING)
 BASE_URL = '/o/app/'          # nginx location路径: /app/
 STATIC_URL = '/o/app/static/' # nginx location路径: /app/static/
 
+# ==============================redis缓存=======================================
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/0'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
+        },
+        'KEY_PREFIX': 'django_cache',
+    }
+}
+
+# 会话也可以使用Redis（可选）
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
