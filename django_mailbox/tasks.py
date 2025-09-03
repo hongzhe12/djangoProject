@@ -21,7 +21,10 @@ def get_sparkai_response_task(self, user_input, task_id=None):
     异步获取星火大模型回复的任务
     """
     if task_id is None:
-        task_id = str(uuid.uuid4())
+        # 使用self.request.id获取Celery的task_id
+        task_id = self.request.id
+        
+        # task_id = str(uuid.uuid4())
     
     try:
         # 延迟导入，避免循环导入问题

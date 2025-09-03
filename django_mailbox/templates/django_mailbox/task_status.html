@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>任务状态</title>
+    <style>
+        .container { max-width: 1000px; margin: 20px auto; }
+        .task-item { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .processing { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .success { background: #d4edda; border-left: 4px solid #28a745; }
+        .error { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .stats { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .progress-bar { 
+            height: 20px; 
+            background: #e9ecef; 
+            border-radius: 10px; 
+            margin: 10px 0; 
+            overflow: hidden; 
+        }
+        .progress-fill { 
+            height: 100%; 
+            background: #007bff; 
+            transition: width 0.3s; 
+        }
+        .question-text { 
+            white-space: pre-wrap; 
+            word-break: break-word; 
+            margin: 10px 0; 
+        }
+        .result-text { 
+            white-space: pre-wrap; 
+            word-break: break-word; 
+            background: white; 
+            padding: 10px; 
+            border-radius: 3px; 
+            margin: 10px 0; 
+        }
+        .pagination { 
+            margin: 20px 0; 
+            text-align: center; 
+        }
+        .pagination a {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .pagination a:hover {
+            background: #f0f0f0;
+        }
+        .pagination .current {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 4px;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+        }
+        .pagination-info {
+            text-align: center;
+            margin: 10px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>任务执行状态</h2>
+        
+        <div class="stats">
+            <h3>总体进度</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ progress_percent }}%;"></div>
+            </div>
+            <p>完成度: {{ progress_percent }}%</p>
+            <p>总问题数: {{ total_count }}</p>
+            <p>已完成: {{ completed_count }}</p>
+            <p>处理中: {{ processing_count }}</p>
+            <p>失败: {{ error_count }}</p>
+            {% if submitted_at %}
+            <p>提交时间: {{ submitted_at|date:"Y-m-d H:i:s" }}</p>
+            {% endif %}
+        </div>
+
+        <!-- 分页信息 -->
+        <!-- 在分页信息部分添加 -->
+        <div class="pagination-info">
+            显示 {{ results.start_index }} - {{ results.end_index }} 条，共 {{ total_count }} 条任务
+            <form method="get" style="display: inline; margin-left: 20px;">
+                <label>每页显示：
+                    <select name="per_page" onchange="this.form.submit()">
+                        <option value="1" {% if request.GET.per_page == "1" %}selected{% endif %}>1</option>
+                        <option value="2" {% if request.GET.per_page == "3" %}selected{% endif %}>3</option>
+                        <option value="10" {% if request.GET.per_page == "10" %}selected{% endif %}>10</option>
+                    </select>
+                </label>
+                {% for key, value in request.GET.items %}
+                    {% if key != 'per_page' %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endif %}
+                {% endfor %}
+            </form>
+        </div>
+
+        {% for result in results %}
+        <div class="task-item {% if result.status == 'success' %}success{% elif result.status == 'error' %}error{% else %}processing{% endif %}">
+            <h4>问题 {{ forloop.counter0|add:results.start_index }}:</h4>
+            <div class="question-text">{{ result.question }}</div>
+            
+            {% if result.status == 'success' %}
+                <p><strong>✅ 结果:</strong></p>
+                <div class="result-text">{{ result.result }}</div>
+            {% elif result.status == 'error' %}
+                <p><strong>❌ 错误:</strong> {{ result.error }}</p>
+            {% else %}
+                <p><strong>⏳ 状态:</strong> 处理中...（预计10-20分钟）</p>
+            {% endif %}
+            
+            <p><small>任务ID: {{ result.task_id }}</small></p>
+            {% if result.completed_at %}
+            <p><small>完成时间: {{ result.completed_at }}</small></p>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="task-item">
+            <p>暂无任务信息，请先提交问题</p>
+        </div>
+        {% endfor %}
+
+        <!-- 分页导航 -->
+        {% if results.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if results.has_previous %}
+                <a href="?page=1">&laquo; 首页</a>
+                <a href="?page={{ results.previous_page_number }}">上一页</a>
+            {% endif %}
+
+            {% for num in results.paginator.page_range %}
+                {% if results.number == num %}
+                    <span class="current">{{ num }}</span>
+                {% elif num > results.number|add:'-3' and num < results.number|add:'3' %}
+                    <a href="?page={{ num }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if results.has_next %}
+                <a href="?page={{ results.next_page_number }}">下一页</a>
+                <a href="?page={{ results.paginator.num_pages }}">末页 &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 30px; text-align: center;">
+            <p>
+                <a href="{% url 'django_mailbox:batch_tasks' %}" style="color: #007bff; text-decoration: none; margin-right: 20px;">
+                    📝 返回提交页面
+                </a>
+                <a href="#" onclick="location.reload()" style="color: #28a745; text-decoration: none;">
+                    🔄 刷新状态
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

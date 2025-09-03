@@ -4,7 +4,7 @@ from .views import (
     SendMailAPIView, EmailConfigViewSet, index
 )
 
-from .views import start_sparkai_chat,check_sparkai_result
+from .views import start_sparkai_chat,check_sparkai_result,batch_tasks_view,task_status
 
 app_name = 'django_mailbox'
 router = DefaultRouter()
@@ -16,9 +16,14 @@ router.register(r'emailconfig', EmailConfigViewSet, basename='emailconfig')
 
 
 urlpatterns = [
+    path('batch-tasks/', batch_tasks_view, name='batch_tasks'),
+    path('task-status/', task_status, name='task_status'),
+
     path('api/chat/start/', start_sparkai_chat, name='start_chat'),
     path('api/chat/result/<str:task_id>/', check_sparkai_result, name='check_result'),
     path('send_mail/', SendMailAPIView.as_view()),
     path('email/', index, name='email'),
     path('', include(router.urls)),
+
+    
 ]

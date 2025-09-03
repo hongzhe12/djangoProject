@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>批量AI分析任务</title>
+    <style>
+        .container { max-width: 800px; margin: 20px auto; }
+        .question-group { margin: 10px 0; }
+        .question-input { width: 100%; height: 60px; margin: 5px 0; }
+        .file-upload { margin: 20px 0; padding: 15px; border: 2px dashed #ccc; }
+        .submit-btn { 
+            padding: 12px 24px; 
+            margin: 20px 0; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+        }
+        .submit-btn:hover { background: #0056b3; }
+        .status { margin: 20px 0; padding: 10px; background: #f5f5f5; }
+        .file-info { color: #666; font-size: 14px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>批量AI分析任务提交</h2>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- 文件上传区域 -->
+            <div class="file-upload">
+                <h3>方式一：上传问题文件</h3>
+                <p>支持.txt文件，每行一个问题</p>
+                <input type="file" name="questions_file" accept=".txt">
+                <p class="file-info">或者使用下方的输入框手动输入问题</p>
+            </div>
+            
+            <!-- 手动输入区域 -->
+            <div>
+                <h3>方式二：手动输入问题</h3>
+                <div id="questions-container">
+                    <div class="question-group">
+                        <textarea name="question_1" class="question-input" placeholder="请输入问题..."></textarea>
+                    </div>
+                    <div class="question-group">
+                        <textarea name="question_2" class="question-input" placeholder="请输入问题..."></textarea>
+                    </div>
+                    <div class="question-group">
+                        <textarea name="question_3" class="question-input" placeholder="请输入问题..."></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn">提交批量分析</button>
+        </form>
+
+        {% if messages %}
+        <div class="status">
+            {% for message in messages %}
+                <div style="color: {% if message.tags == 'error' %}#dc3545{% elif message.tags == 'warning' %}#ffc107{% else %}#28a745{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 30px;">
+            <p><a href="{% url 'django_mailbox:task_status' %}" style="color: #007bff; text-decoration: none;">
+                📊 查看任务状态
+            </a></p>
+            <p style="color: #666; font-size: 14px;">
+                提示：每个问题需要10-20分钟处理，建议使用文件上传功能批量处理
+            </p>
+        </div>
+    </div>
+</body>
+</html>
