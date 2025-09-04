@@ -90,63 +90,6 @@ class SendMailAPIView(APIView):
 
 
 
-@csrf_exempt
-@require_POST
-def start_sparkai_chat(request):
-    """
-    启动异步AI聊天任务
-    """
-    try:
-        data = json.loads(request.body)
-        user_input = data.get('message', '')
-        
-        if not user_input:
-            return JsonResponse({'error': 'Message is required'}, status=400)
-
-        
-        # 启动异步任务
-        get_sparkai_response_task.delay(user_input)
-        
-        # 立即返回任务ID
-        return JsonResponse({
-            'status': 'processing',
-            'task_id': task_id,
-            'message': 'Request is being processed asynchronously'
-        })
-        
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-@csrf_exempt
-def check_sparkai_result(request, task_id):
-    """
-    检查任务结果
-    """
-    result = cache.get(f'sparkai_result_{task_id}')
-    
-    if not result:
-        return JsonResponse({
-            'status': 'processing',
-            'message': 'Task not found or still processing'
-        }, status=404)
-    
-    if result['status'] == 'success':
-        return JsonResponse({
-            'status': 'completed',
-            'result': result['result'],
-            'completed_at': result['completed_at']
-        })
-    else:
-        return JsonResponse({
-            'status': 'error',
-            'error': result['error'],
-            'completed_at': result['completed_at']
-        }, status=500)
-
-
-
-
-
 import datetime
 
 def timestamp_to_human(timestamp):

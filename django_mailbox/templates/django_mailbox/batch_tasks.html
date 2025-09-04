@@ -1,77 +1,363 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>批量AI分析任务</title>
-    <style>
-        .container { max-width: 800px; margin: 20px auto; }
-        .question-group { margin: 10px 0; }
-        .question-input { width: 100%; height: 60px; margin: 5px 0; }
-        .file-upload { margin: 20px 0; padding: 15px; border: 2px dashed #ccc; }
-        .submit-btn { 
-            padding: 12px 24px; 
-            margin: 20px 0; 
-            background: #007bff; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-        }
-        .submit-btn:hover { background: #0056b3; }
-        .status { margin: 20px 0; padding: 10px; background: #f5f5f5; }
-        .file-info { color: #666; font-size: 14px; margin-top: 5px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>批量AI分析任务提交</h2>
-        
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <!-- 文件上传区域 -->
-            <div class="file-upload">
-                <h3>方式一：上传问题文件</h3>
-                <p>支持.txt文件，每行一个问题</p>
-                <input type="file" name="questions_file" accept=".txt">
-                <p class="file-info">或者使用下方的输入框手动输入问题</p>
-            </div>
-            
-            <!-- 手动输入区域 -->
-            <div>
-                <h3>方式二：手动输入问题</h3>
-                <div id="questions-container">
-                    <div class="question-group">
-                        <textarea name="question_1" class="question-input" placeholder="请输入问题..."></textarea>
-                    </div>
-                    <div class="question-group">
-                        <textarea name="question_2" class="question-input" placeholder="请输入问题..."></textarea>
-                    </div>
-                    <div class="question-group">
-                        <textarea name="question_3" class="question-input" placeholder="请输入问题..."></textarea>
-                    </div>
-                </div>
-            </div>
-            
-            <button type="submit" class="submit-btn">提交批量分析</button>
-        </form>
+{% extends "django_mailbox/base.html" %}
 
-        {% if messages %}
-        <div class="status">
-            {% for message in messages %}
-                <div style="color: {% if message.tags == 'error' %}#dc3545{% elif message.tags == 'warning' %}#ffc107{% else %}#28a745{% endif %};">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+{% block title %}批量任务提交 - AI批量分析系统{% endblock %}
 
-        <div style="margin-top: 30px;">
-            <p><a href="{% url 'django_mailbox:task_status' %}" style="color: #007bff; text-decoration: none;">
-                📊 查看任务状态
-            </a></p>
-            <p style="color: #666; font-size: 14px;">
-                提示：每个问题需要10-20分钟处理，建议使用文件上传功能批量处理
-            </p>
-        </div>
+{% block extra_css %}
+/* 文件上传区域样式 */
+.tx-upload-area {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 24px;
+    transition: all 0.2s ease;
+    background-color: #fafafa;
+}
+
+.tx-upload-area:hover {
+    border-color: #0066cc;
+    background-color: #f5f9ff;
+}
+
+.tx-upload-icon {
+    font-size: 40px;
+    color: #999;
+    margin-bottom: 16px;
+    transition: color 0.2s ease;
+}
+
+.tx-upload-area:hover .tx-upload-icon {
+    color: #0066cc;
+}
+
+.tx-upload-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.tx-upload-desc {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* 自定义文件上传按钮 */
+.tx-upload-btn {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}
+
+.tx-upload-btn input[type="file"] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* 手动输入区域样式 */
+.tx-input-area {
+    margin-bottom: 24px;
+}
+
+.tx-input-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.tx-input-title i {
+    margin-right: 8px;
+    color: #0066cc;
+}
+
+/* 问题输入框样式 */
+.tx-question-group {
+    margin-bottom: 12px;
+}
+
+.tx-question-input {
+    width: 100%;
+    height: 80px;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+}
+
+.tx-question-input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 2px rgba(0,102,204,0.1);
+}
+
+.tx-question-input::placeholder {
+    color: #999;
+}
+
+/* 添加/删除按钮样式 */
+.tx-input-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.tx-add-btn, .tx-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tx-add-btn {
+    color: #0066cc;
+    background-color: #f5f9ff;
+    border: 1px solid #e1efff;
+    margin-right: 8px;
+}
+
+.tx-add-btn:hover {
+    background-color: #e6f0ff;
+    border-color: #c9e0ff;
+}
+
+.tx-remove-btn {
+    color: #f53f3f;
+    background-color: #fff2f0;
+    border: 1px solid #ffecea;
+}
+
+.tx-remove-btn:hover {
+    background-color: #ffebe8;
+    border-color: #ffd9d3;
+}
+
+.tx-add-btn i, .tx-remove-btn i {
+    margin-right: 4px;
+}
+
+/* 提示信息样式 */
+.tx-hint {
+    background-color: #f5f9ff;
+    border-left: 3px solid #0066cc;
+    padding: 12px 16px;
+    border-radius: 0 4px 4px 0;
+    margin-top: 24px;
+    font-size: 14px;
+    color: #666;
+}
+
+.tx-hint i {
+    color: #0066cc;
+    margin-right: 8px;
+}
+
+/* 提交按钮区域 */
+.tx-submit-area {
+    margin: 24px 0;
+}
+{% endblock %}
+
+{% block content %}
+<!-- 任务提交卡片 -->
+<div class="tx-card">
+    <div class="tx-card-header">
+        <h2 class="tx-card-title">
+            <i class="fa fa-cloud-upload"></i>
+            批量AI分析任务提交
+        </h2>
     </div>
-</body>
-</html>
+    
+    <!-- 表单内容 -->
+    <form method="post" enctype="multipart/form-data" id="batchTaskForm">
+        {% csrf_token %}
+        
+        <!-- 1. 文件上传区域 -->
+        <div class="tx-upload-area">
+            <div class="tx-upload-icon">
+                <i class="fa fa-file-text-o"></i>
+            </div>
+            <div class="tx-upload-title">方式一：上传问题文件</div>
+            <div class="tx-upload-desc">支持 .txt 格式文件，每行填写一个问题，适用于大量任务批量提交</div>
+            
+            <div class="tx-upload-btn">
+                <button type="button" class="tx-btn tx-btn-default">
+                    <i class="fa fa-upload"></i> 选择文件
+                </button>
+                <input type="file" name="questions_file" accept=".txt" id="questionsFile">
+            </div>
+            
+            <!-- 文件名称显示 -->
+            <div id="fileNameDisplay" style="margin-top: 16px; font-size: 14px; color: #333; display: none;">
+                <i class="fa fa-file-o" style="margin-right: 8px;"></i>
+                <span id="selectedFileName"></span>
+            </div>
+        </div>
+        
+        <!-- 2. 手动输入区域 -->
+        <div class="tx-input-area">
+            <div class="tx-input-title">
+                <i class="fa fa-pencil"></i>
+                方式二：手动输入问题
+            </div>
+            
+            <div id="questions-container">
+                <!-- 问题输入框组 1 -->
+                <div class="tx-question-group">
+                    <textarea name="question_1" class="tx-question-input" placeholder="请输入问题内容，例如：分析2024年第一季度销售数据趋势..."></textarea>
+                </div>
+                
+                <!-- 问题输入框组 2 -->
+                <div class="tx-question-group">
+                    <textarea name="question_2" class="tx-question-input" placeholder="请输入问题内容..."></textarea>
+                </div>
+                
+                <!-- 问题输入框组 3 -->
+                <div class="tx-question-group">
+                    <textarea name="question_3" class="tx-question-input" placeholder="请输入问题内容..."></textarea>
+                </div>
+            </div>
+            
+            <!-- 添加/删除按钮 -->
+            <div class="tx-input-actions">
+                <button type="button" class="tx-add-btn" id="addQuestionBtn">
+                    <i class="fa fa-plus"></i> 添加问题
+                </button>
+                <button type="button" class="tx-remove-btn" id="removeQuestionBtn">
+                    <i class="fa fa-minus"></i> 删除最后一个
+                </button>
+            </div>
+        </div>
+        
+        <!-- 3. 提交按钮 -->
+        <div class="tx-submit-area">
+            <button type="submit" class="tx-btn tx-btn-primary" style="padding: 10px 24px; font-size: 16px;">
+                <i class="fa fa-check"></i> 提交批量分析任务
+            </button>
+        </div>
+    </form>
+    
+    <!-- 4. 消息提示 -->
+    {% if messages %}
+    <div style="margin-top: 20px;">
+        {% for message in messages %}
+        <div class="tx-alert 
+            {% if message.tags == 'error' %}tx-alert-error{% elif message.tags == 'warning' %}tx-alert-warning{% else %}tx-alert-success{% endif %}">
+            <i class="fa 
+                {% if message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %}">
+            </i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- 5. 提示信息 -->
+    <div class="tx-hint">
+        <i class="fa fa-lightbulb-o"></i>
+        <strong>温馨提示：</strong>每个问题预计需要10-20分钟处理，大量任务建议使用「文件上传」方式；提交后可前往「状态查询」页面查看进度。
+    </div>
+</div>
+
+<!-- 6. 跳转链接 -->
+<div style="text-align: center; margin-top: 30px; font-size: 14px;">
+    <a href="{% url 'django_mailbox:task_status' %}" class="tx-btn tx-btn-default">
+        <i class="fa fa-tasks"></i> 前往查看任务状态
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+// 文件选择后显示文件名
+document.getElementById('questionsFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const selectedFileName = document.getElementById('selectedFileName');
+        
+        selectedFileName.textContent = file.name;
+        fileNameDisplay.style.display = 'block';
+    }
+});
+
+// 添加问题输入框
+document.getElementById('addQuestionBtn').addEventListener('click', function() {
+    const container = document.getElementById('questions-container');
+    const groupCount = container.querySelectorAll('.tx-question-group').length;
+    const newGroupIndex = groupCount + 1;
+    
+    // 创建新的输入框组
+    const newGroup = document.createElement('div');
+    newGroup.className = 'tx-question-group';
+    newGroup.innerHTML = `
+        <textarea name="question_${newGroupIndex}" class="tx-question-input" placeholder="请输入问题内容..."></textarea>
+    `;
+    
+    container.appendChild(newGroup);
+    
+    // 聚焦到新输入框
+    newGroup.querySelector('.tx-question-input').focus();
+});
+
+// 删除最后一个问题输入框
+document.getElementById('removeQuestionBtn').addEventListener('click', function() {
+    const container = document.getElementById('questions-container');
+    const groups = container.querySelectorAll('.tx-question-group');
+    
+    // 至少保留1个输入框
+    if (groups.length > 1) {
+        container.removeChild(groups[groups.length - 1]);
+    } else {
+        // 提示用户不能删除最后一个
+        alert('至少需要保留一个问题输入框');
+    }
+});
+
+// 表单提交前简单验证
+document.getElementById('batchTaskForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('questionsFile');
+    const questionInputs = document.querySelectorAll('.tx-question-input');
+    
+    // 检查是否选择了文件或输入了问题
+    let hasContent = false;
+    
+    // 检查文件
+    if (fileInput.files.length > 0) {
+        hasContent = true;
+    } else {
+        // 检查至少一个问题输入框有内容
+        questionInputs.forEach(input => {
+            if (input.value.trim() !== '') {
+                hasContent = true;
+            }
+        });
+    }
+    
+    // 如果没有内容，阻止提交并提示
+    if (!hasContent) {
+        e.preventDefault();
+        alert('请选择问题文件或手动输入至少一个问题后再提交');
+    } else {
+        // 确认提交
+        const confirmSubmit = confirm('任务提交后将开始处理，每个问题预计10-20分钟，是否确认提交？');
+        if (!confirmSubmit) {
+            e.preventDefault();
+        }
+    }
+});
+{% endblock %}

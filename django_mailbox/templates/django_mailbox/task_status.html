@@ -1,168 +1,352 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>任务状态</title>
-    <style>
-        .container { max-width: 1000px; margin: 20px auto; }
-        .task-item { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
-        .processing { background: #fff3cd; border-left: 4px solid #ffc107; }
-        .success { background: #d4edda; border-left: 4px solid #28a745; }
-        .error { background: #f8d7da; border-left: 4px solid #dc3545; }
-        .stats { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 5px; }
-        .progress-bar { 
-            height: 20px; 
-            background: #e9ecef; 
-            border-radius: 10px; 
-            margin: 10px 0; 
-            overflow: hidden; 
-        }
-        .progress-fill { 
-            height: 100%; 
-            background: #007bff; 
-            transition: width 0.3s; 
-        }
-        .question-text { 
-            white-space: pre-wrap; 
-            word-break: break-word; 
-            margin: 10px 0; 
-        }
-        .result-text { 
-            white-space: pre-wrap; 
-            word-break: break-word; 
-            background: white; 
-            padding: 10px; 
-            border-radius: 3px; 
-            margin: 10px 0; 
-        }
-        .pagination { 
-            margin: 20px 0; 
-            text-align: center; 
-        }
-        .pagination a {
-            display: inline-block;
-            padding: 8px 16px;
-            margin: 0 4px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            text-decoration: none;
-            color: #007bff;
-        }
-        .pagination a:hover {
-            background: #f0f0f0;
-        }
-        .pagination .current {
-            display: inline-block;
-            padding: 8px 16px;
-            margin: 0 4px;
-            border: 1px solid #007bff;
-            border-radius: 4px;
-            background: #007bff;
-            color: white;
-        }
-        .pagination-info {
-            text-align: center;
-            margin: 10px 0;
-            color: #666;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>任务执行状态</h2>
-        
-        <div class="stats">
-            <h3>总体进度</h3>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: {{ progress_percent }}%;"></div>
-            </div>
-            <p>完成度: {{ progress_percent }}%</p>
-            <p>总问题数: {{ total_count }}</p>
-            <p>已完成: {{ completed_count }}</p>
-            <p>处理中: {{ processing_count }}</p>
-            <p>失败: {{ error_count }}</p>
-            {% if submitted_at %}
-            <p>提交时间: {{ submitted_at|date:"Y-m-d H:i:s" }}</p>
-            {% endif %}
-        </div>
+{% extends "django_mailbox/base.html" %}
 
-        <!-- 分页信息 -->
-        <!-- 在分页信息部分添加 -->
-        <div class="pagination-info">
+{% block title %}任务状态 - AI批量分析系统{% endblock %}
+
+{% block extra_css %}
+/* 任务项样式 - 按状态区分 */
+.tx-task-item {
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border-left: 4px solid transparent;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s ease;
+}
+
+.tx-task-item:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* 状态颜色区分 */
+.tx-task-processing {
+    border-left-color: #ff7d00;
+    background-color: #fffbe6;
+}
+
+.tx-task-success {
+    border-left-color: #00b42a;
+    background-color: #f0fdf4;
+}
+
+.tx-task-error {
+    border-left-color: #f53f3f;
+    background-color: #fff2f0;
+}
+
+/* 任务项内部结构 */
+.tx-task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.tx-task-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.tx-task-meta {
+    font-size: 12px;
+    color: #999;
+    line-height: 1.4;
+    text-align: right;
+}
+
+.tx-task-content {
+    margin-bottom: 12px;
+}
+
+/* 问题和结果文本样式 */
+.tx-task-question {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    background-color: #fafafa;
+    border-radius: 4px;
+    border: 1px solid #f0f0f0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.tx-task-result {
+    font-size: 14px;
+    color: #333;
+    padding: 12px;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* 状态文本样式 */
+.tx-task-status {
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.tx-task-status i {
+    margin-right: 6px;
+}
+
+.tx-status-processing {
+    color: #ff7d00;
+}
+
+.tx-status-success {
+    color: #00b42a;
+}
+
+.tx-status-error {
+    color: #f53f3f;
+}
+
+/* 空任务提示样式 */
+.tx-empty-task {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 14px;
+}
+
+.tx-empty-task i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    color: #ddd;
+}
+
+/* 每页显示数量选择器 */
+.tx-per-page {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+.tx-per-page select {
+    margin-left: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    color: #333;
+}
+
+/* 操作按钮区域 */
+.tx-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 30px 0 10px;
+}
+{% endblock %}
+
+{% block content %}
+<!-- 1. 任务统计卡片 -->
+<div class="tx-card">
+    <div class="tx-card-header">
+        <h2 class="tx-card-title">
+            <i class="fa fa-bar-chart"></i>
+            任务总体进度
+        </h2>
+    </div>
+    
+    <div style="padding: 0 2px;">
+        <!-- 进度条 -->
+        <div class="tx-progress">
+            <div class="tx-progress-bar" style="width: {{ progress_percent }}%;"></div>
+        </div>
+        <p style="font-size: 14px; color: #666; margin: 8px 0;">
+            当前完成度: <span style="font-weight: 600; color: #0066cc;">{{ progress_percent }}%</span>
+        </p>
+        
+        <!-- 统计数据网格 -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; margin-top: 20px;">
+            <div style="text-align: center; padding: 12px; background-color: #fafafa; border-radius: 6px;">
+                <div style="font-size: 12px; color: #999;">总任务数</div>
+                <div style="font-size: 22px; font-weight: 600; margin: 8px 0; color: #333;">{{ total_count }}</div>
+            </div>
+            <div style="text-align: center; padding: 12px; background-color: #fafafa; border-radius: 6px;">
+                <div style="font-size: 12px; color: #999;">已完成</div>
+                <div style="font-size: 22px; font-weight: 600; margin: 8px 0; color: #00b42a;">{{ completed_count }}</div>
+            </div>
+            <div style="text-align: center; padding: 12px; background-color: #fafafa; border-radius: 6px;">
+                <div style="font-size: 12px; color: #999;">处理中</div>
+                <div style="font-size: 22px; font-weight: 600; margin: 8px 0; color: #ff7d00;">{{ processing_count }}</div>
+            </div>
+            <div style="text-align: center; padding: 12px; background-color: #fafafa; border-radius: 6px;">
+                <div style="font-size: 12px; color: #999;">失败</div>
+                <div style="font-size: 22px; font-weight: 600; margin: 8px 0; color: #f53f3f;">{{ error_count }}</div>
+            </div>
+        </div>
+        
+        <!-- 提交时间 -->
+        {% if submitted_at %}
+        <div style="font-size: 14px; color: #666; margin-top: 20px;">
+            <i class="fa fa-clock-o" style="margin-right: 6px; color: #999;"></i>
+            任务提交时间: {{ submitted_at|date:"Y-m-d H:i:s" }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 2. 任务列表卡片 -->
+<div class="tx-card">
+    <div class="tx-card-header">
+        <h2 class="tx-card-title">
+            <i class="fa fa-list-alt"></i>
+            任务详情列表
+        </h2>
+    </div>
+    
+    <!-- 任务列表内容 -->
+    <div style="padding: 4px 0;">
+        {% for result in results %}
+        <!-- 单个任务项 -->
+        <div class="tx-task-item 
+            {% if result.status == 'success' %}tx-task-success{% elif result.status == 'error' %}tx-task-error{% else %}tx-task-processing{% endif %}">
+            <!-- 任务头部：序号 + 元数据 -->
+            <div class="tx-task-header">
+                <div class="tx-task-title">
+                    任务 #{{ forloop.counter0|add:results.start_index }}
+                </div>
+                <div class="tx-task-meta">
+                    <div>任务ID: {{ result.task_id }}</div>
+                    {% if result.completed_at %}
+                    <div>完成时间: {{ result.completed_at }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 任务内容：问题 -->
+            <div class="tx-task-content">
+                <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 6px;">
+                    问题内容:
+                </div>
+                <div class="tx-task-question">
+                    {{ result.question }}
+                </div>
+                
+                <!-- 按状态显示不同内容 -->
+                {% if result.status == 'success' %}
+                <!-- 成功状态：显示结果 -->
+                <div style="font-size: 14px; font-weight: 500; color: #333; margin: 12px 0 6px;">
+                    分析结果:
+                </div>
+                <div class="tx-task-result">
+                    {{ result.result }}
+                </div>
+                
+                {% elif result.status == 'error' %}
+                <!-- 错误状态：显示错误信息 -->
+                <div class="tx-task-status tx-status-error">
+                    <i class="fa fa-exclamation-circle"></i>
+                    处理失败: {{ result.error }}
+                </div>
+                
+                {% else %}
+                <!-- 处理中状态：显示提示 -->
+                <div class="tx-task-status tx-status-processing">
+                    <i class="fa fa-spinner fa-spin"></i>
+                    处理中（预计10-20分钟，请耐心等待）
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <!-- 空任务提示 -->
+        <div class="tx-empty-task">
+            <i class="fa fa-inbox"></i>
+            <p>暂无任务数据，请先前往「任务提交」页面创建分析任务</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- 分页导航 -->
+    {% if results.paginator.num_pages > 1 %}
+    <div style="margin-top: 24px;">
+        <!-- 分页信息 + 每页显示数量 -->
+        <div class="tx-pagination-info">
             显示 {{ results.start_index }} - {{ results.end_index }} 条，共 {{ total_count }} 条任务
-            <form method="get" style="display: inline; margin-left: 20px;">
-                <label>每页显示：
-                    <select name="per_page" onchange="this.form.submit()">
-                        <option value="1" {% if request.GET.per_page == "1" %}selected{% endif %}>1</option>
-                        <option value="2" {% if request.GET.per_page == "3" %}selected{% endif %}>3</option>
-                        <option value="10" {% if request.GET.per_page == "10" %}selected{% endif %}>10</option>
-                    </select>
-                </label>
+            <form method="get" class="tx-per-page">
+                每页显示：
+                <select name="per_page" onchange="this.form.submit()">
+                    <option value="1" {% if request.GET.per_page == "1" %}selected{% endif %}>1条</option>
+                    <option value="3" {% if request.GET.per_page == "3" %}selected{% endif %}>3条</option>
+                    <option value="10" {% if request.GET.per_page == "10" or not request.GET.per_page %}selected{% endif %}>10条</option>
+                </select>
                 {% for key, value in request.GET.items %}
                     {% if key != 'per_page' %}
-                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
                     {% endif %}
                 {% endfor %}
             </form>
         </div>
-
-        {% for result in results %}
-        <div class="task-item {% if result.status == 'success' %}success{% elif result.status == 'error' %}error{% else %}processing{% endif %}">
-            <h4>问题 {{ forloop.counter0|add:results.start_index }}:</h4>
-            <div class="question-text">{{ result.question }}</div>
-            
-            {% if result.status == 'success' %}
-                <p><strong>✅ 结果:</strong></p>
-                <div class="result-text">{{ result.result }}</div>
-            {% elif result.status == 'error' %}
-                <p><strong>❌ 错误:</strong> {{ result.error }}</p>
-            {% else %}
-                <p><strong>⏳ 状态:</strong> 处理中...（预计10-20分钟）</p>
-            {% endif %}
-            
-            <p><small>任务ID: {{ result.task_id }}</small></p>
-            {% if result.completed_at %}
-            <p><small>完成时间: {{ result.completed_at }}</small></p>
-            {% endif %}
-        </div>
-        {% empty %}
-        <div class="task-item">
-            <p>暂无任务信息，请先提交问题</p>
-        </div>
-        {% endfor %}
-
-        <!-- 分页导航 -->
-        {% if results.paginator.num_pages > 1 %}
-        <div class="pagination">
+        
+        <!-- 分页按钮 -->
+        <div class="tx-pagination">
             {% if results.has_previous %}
-                <a href="?page=1">&laquo; 首页</a>
-                <a href="?page={{ results.previous_page_number }}">上一页</a>
+            <a href="?page=1" class="tx-pagination-item tx-pagination-prev">
+                <i class="fa fa-angle-double-left"></i> 首页
+            </a>
+            <a href="?page={{ results.previous_page_number }}" class="tx-pagination-item tx-pagination-prev">
+                <i class="fa fa-angle-left"></i> 上一页
+            </a>
             {% endif %}
-
+            
             {% for num in results.paginator.page_range %}
                 {% if results.number == num %}
-                    <span class="current">{{ num }}</span>
+                <span class="tx-pagination-item active">{{ num }}</span>
                 {% elif num > results.number|add:'-3' and num < results.number|add:'3' %}
-                    <a href="?page={{ num }}">{{ num }}</a>
+                <a href="?page={{ num }}" class="tx-pagination-item">{{ num }}</a>
                 {% endif %}
             {% endfor %}
-
+            
             {% if results.has_next %}
-                <a href="?page={{ results.next_page_number }}">下一页</a>
-                <a href="?page={{ results.paginator.num_pages }}">末页 &raquo;</a>
+            <a href="?page={{ results.next_page_number }}" class="tx-pagination-item tx-pagination-next">
+                下一页 <i class="fa fa-angle-right"></i>
+            </a>
+            <a href="?page={{ results.paginator.num_pages }}" class="tx-pagination-item tx-pagination-next">
+                末页 <i class="fa fa-angle-double-right"></i>
+            </a>
             {% endif %}
         </div>
-        {% endif %}
-
-        <div style="margin-top: 30px; text-align: center;">
-            <p>
-                <a href="{% url 'django_mailbox:batch_tasks' %}" style="color: #007bff; text-decoration: none; margin-right: 20px;">
-                    📝 返回提交页面
-                </a>
-                <a href="#" onclick="location.reload()" style="color: #28a745; text-decoration: none;">
-                    🔄 刷新状态
-                </a>
-            </p>
-        </div>
     </div>
-</body>
-</html>
+    {% endif %}
+</div>
+
+<!-- 3. 操作按钮区域 -->
+<div class="tx-actions">
+    <a href="{% url 'django_mailbox:batch_tasks' %}" class="tx-btn tx-btn-default">
+        <i class="fa fa-arrow-left"></i> 返回提交页面
+    </a>
+    <button onclick="location.reload()" class="tx-btn tx-btn-success">
+        <i class="fa fa-refresh"></i> 刷新任务状态
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 可选：添加进度刷新提示 -->
+document.querySelector('.tx-btn-success').addEventListener('click', function() {
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 刷新中...';
+    btn.disabled = true;
+    
+    // 刷新完成后恢复按钮状态
+    window.addEventListener('load', function() {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+});
+{% endblock %}
