@@ -29,6 +29,7 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0  # 添加Redis连接环境变量
     command: /bin/sh start.sh
+    restart: always
 
   redis:
     image: redis:7-alpine
@@ -63,6 +64,7 @@ services:
       timeout: 20s
       start_period: 40s
       retries: 3
+    restart: always
 
   celery_beat:
     container_name: ${CONTAINER_NAME}-celerybeat
@@ -78,6 +80,7 @@ services:
       - dj_network
     env_file:
       - .env
+    restart: always
 
 volumes:
   postgres_data:

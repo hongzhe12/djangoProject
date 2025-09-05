@@ -7,7 +7,7 @@
     <title>{% block title %}AI批量分析系统{% endblock %}</title>
     <!-- 本地资源，优化加载速度 -->
     <link rel="stylesheet" href="{% static "font-awesome/css/font-awesome.min.css" %}" >
-  
+
     <style>
         /* 腾讯风格基础样式 */
         * {
@@ -274,6 +274,25 @@
             .tx-card {
                 padding: 16px;
             }
+        }
+        .export-buttons {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .export-buttons h4 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        
+        .btn-group .btn {
+            margin-right: 10px;
+        }
+        
+        .btn-group .btn:last-child {
+            margin-right: 0;
         }
         
         /* 页面特有样式占位 */

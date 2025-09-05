@@ -189,13 +189,13 @@ CELERY_TASK_TIME_LIMIT = 60*10  # 单个任务最大执行时间(秒)，超时�
 # 定时任务调度器配置
 # CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'  # 使用数据库存储调度计划
 
-CELERY_BEAT_SCHEDULE = {
-    'send-daily-report': {
-        'task': 'django_mailbox.tasks.send_daily_report',
-        'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
-        'args': ("每日报告",) 
-    },
-}
+# CELERY_BEAT_SCHEDULE = {
+#     'send-daily-report': {
+#         'task': 'django_mailbox.tasks.send_email',
+#         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
+#         'args': ("每日报告",) 
+#     },
+# }
 
 # CELERY_BEAT_SCHEDULE = {
 #     'send-daily-report': {

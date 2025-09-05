@@ -199,6 +199,20 @@
     </div>
 </div>
 
+<div class="export-buttons mb-3">
+    <h4>导出结果</h4>
+    <div class="btn-group">
+        <a href="{% url 'django_mailbox:export_tasks_excel' batch_id=batch_task.id %}" 
+           class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i> 导出详细结果
+        </a>
+        <a href="{% url 'django_mailbox:export_summary_excel' batch_id=batch_task.id %}" 
+           class="btn btn-info">
+            <i class="bi bi-bar-chart"></i> 导出统计摘要
+        </a>
+    </div>
+</div>
+
 <!-- 2. 任务列表卡片 -->
 <div class="tx-card">
     <div class="tx-card-header">
@@ -257,7 +271,7 @@
                 <!-- 处理中状态：显示提示 -->
                 <div class="tx-task-status tx-status-processing">
                     <i class="fa fa-spinner fa-spin"></i>
-                    处理中（预计10-20分钟，请耐心等待）
+                    处理中（请耐心等待）
                 </div>
                 {% endif %}
             </div>

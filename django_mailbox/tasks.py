@@ -8,7 +8,7 @@ import time
 import uuid
 
 @shared_task(bind=True, max_retries=3)
-def send_daily_report(self, subject="每日报告", content=datetime.datetime.today().strftime("%Y年%m月%d日 %H:%M:%S")):
+def send_email(self, subject="每日报告", content=datetime.datetime.today().strftime("%Y年%m月%d日 %H:%M:%S")):
     try:
         send_email_with_attachment(subject, content)
         return "邮件发送成功"

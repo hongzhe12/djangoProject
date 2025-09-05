@@ -354,7 +354,7 @@ document.getElementById('batchTaskForm').addEventListener('submit', function(e) 
         alert('请选择问题文件或手动输入至少一个问题后再提交');
     } else {
         // 确认提交
-        const confirmSubmit = confirm('任务提交后将开始处理，每个问题预计10-20分钟，是否确认提交？');
+        const confirmSubmit = confirm('任务提交后将开始处理，是否确认提交？');
         if (!confirmSubmit) {
             e.preventDefault();
         }
