@@ -146,7 +146,8 @@ if DEBUG:
     ]
 else:
     # 生产模式下文件服务配置
-    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    STATIC_ROOT = '/var/www/django_project/static/'
 
 # ==================== 跨域和 CSRF 配置 ====================
 # 允许所有源进行跨域请求
@@ -285,9 +286,8 @@ else:
 logging.config.dictConfig(LOGGING)
 
 # ==============================配置子路径=======================================
-# 开头和结束都以斜杠结尾
-BASE_URL = '/o/app/'          # nginx location路径: /app/
-STATIC_URL = '/o/app/static/' # nginx location路径: /app/static/
+BASE_URL = os.getenv('BASE_URL')              # nginx location路径: /app/
+STATIC_URL = os.getenv('STATIC_URL')          # nginx location路径: /app/static/
 
 # ==============================redis缓存=======================================
 CACHES = {
