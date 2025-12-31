@@ -1,6 +1,9 @@
 #!/bin/sh
 
-# 安装依赖
+# 安装离线依赖(需要手动下载到 python_packages)
+# pip install --no-index --find-links=/code/python_packages/ -r requirements.txt
+
+# 安装在线依赖
 pip install --no-index --find-links=/code/python_packages/ -r requirements.txt
 
 # 执行数据库迁移
