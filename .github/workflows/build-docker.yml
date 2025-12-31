@@ -36,13 +36,28 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}  # 仅在推送时上传镜像
+          # 关键修改：PR场景（push=false）时，加--load参数把镜像加载到本地；推送场景不需要（push和load不能同时用）
+          load: ${{ github.event_name == 'pull_request' }}
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/djangoproject-web:latest
             ${{ secrets.DOCKER_HUB_USERNAME }}/djangoproject-web:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # 步骤5：验证镜像构建结果
+      # 步骤5：验证镜像构建结果（分场景检查）
       - name: 检查构建的镜像
         run: |
-          docker images | grep djangoproject-web
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # PR场景：本地有镜像，直接查本地
+            echo "=== 检查本地构建的镜像 ==="
+            docker images | grep djangoproject-web
+            # 额外校验：检查镜像是否能正常解析（更严谨）
+            docker image inspect ${{ secrets.DOCKER_HUB_USERNAME }}/djangoproject-web:latest > /dev/null 2>&1
+            echo "✅ PR场景：本地镜像构建成功"
+          else
+            # 推送场景：本地无镜像，检查远程仓库是否存在该镜像
+            echo "=== 检查远程Docker Hub镜像 ==="
+            # 用buildx imagetools检查远程镜像（需要提前登录）
+            docker buildx imagetools inspect ${{ secrets.DOCKER_HUB_USERNAME }}/djangoproject-web:latest > /dev/null 2>&1
+            echo "✅ 推送场景：远程镜像推送成功"
+          fi
