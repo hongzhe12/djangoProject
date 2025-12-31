@@ -4,7 +4,7 @@
 # pip install --no-index --find-links=/code/python_packages/ -r requirements.txt
 
 # 安装在线依赖
-pip install --no-index --find-links=/code/python_packages/ -r requirements.txt
+pip install -r requirements.txt
 
 # 执行数据库迁移
 python manage.py migrate --noinput
