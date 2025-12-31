@@ -29,7 +29,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      # 步骤4：构建并推送 web 服务镜像
+      # 步骤4：构建并推送web服务镜像
       - name: 构建并推送 web 镜像
         uses: docker/build-push-action@v5
         with:
