@@ -4,7 +4,7 @@ services:
     container_name: ${CONTAINER_NAME}-postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: always
+    restart: no
     env_file:
       - .env
     networks:
@@ -30,12 +30,12 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0  # 添加Redis连接环境变量
     command: /bin/sh start.sh
-    restart: always
+    restart: no
 
   redis:
     image: redis:7-alpine
     container_name: ${CONTAINER_NAME}-redis
-    restart: always
+    restart: no
     volumes:
       - redis_data:/data
     networks:
@@ -65,7 +65,7 @@ services:
       timeout: 20s
       start_period: 40s
       retries: 3
-    restart: always
+    restart: no
 
   celery_beat:
     container_name: ${CONTAINER_NAME}-celerybeat
@@ -81,7 +81,7 @@ services:
       - dj_network
     env_file:
       - .env
-    restart: always
+    restart: no
 
 volumes:
   postgres_data:
