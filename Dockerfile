@@ -15,7 +15,10 @@ COPY . .
 # RUN uv pip install --system --no-cache-dir -r requirements.txt -i http://pypi.doubanio.com/simple/
 
 # 离线安装Python依赖
-RUN pip install --no-index --find-links=/code/python_packages/ -r requirements.txt
+# RUN pip install --no-index --find-links=/code/python_packages/ -r requirements.txt
+
+# 在线安装依赖
+RUN pip install -r requirements.txt
 
 
 # 设置环境变量
