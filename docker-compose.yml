@@ -4,7 +4,7 @@ services:
     container_name: ${CONTAINER_NAME}-postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: always
+    restart: no
     env_file:
       - .env
     networks:
@@ -14,7 +14,7 @@ services:
   
   web:
     container_name: ${CONTAINER_NAME}
-    build: .
+    image: hongzhe2022/djangoproject-web:9afc9df50fd5519ec3b6897e6e4c8f1b19132d94  # 使用拉取的镜像
     volumes:
       - .:/code
       - ./python_packages:/code/python_packages
@@ -30,12 +30,12 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0  # 添加Redis连接环境变量
     command: /bin/sh start.sh
-    restart: always
+    restart: no
 
   redis:
     image: redis:7-alpine
     container_name: ${CONTAINER_NAME}-redis
-    restart: always
+    restart: no
     volumes:
       - redis_data:/data
     networks:
@@ -45,7 +45,7 @@ services:
 
   celery_worker:
     container_name: ${CONTAINER_NAME}-celery
-    build: .
+    image: hongzhe2022/djangoproject-web:9afc9df50fd5519ec3b6897e6e4c8f1b19132d94  # 使用拉取的镜像
     command: /bin/sh -c "sleep 5 && celery -A djangoProject worker --loglevel=info --concurrency=4"
     volumes:
       - .:/code
@@ -65,11 +65,11 @@ services:
       timeout: 20s
       start_period: 40s
       retries: 3
-    restart: always
+    restart: no
 
   celery_beat:
     container_name: ${CONTAINER_NAME}-celerybeat
-    build: .
+    image: hongzhe2022/djangoproject-web:9afc9df50fd5519ec3b6897e6e4c8f1b19132d94  # 使用拉取的镜像
     command: /bin/sh -c "sleep 5 && celery -A djangoProject beat --loglevel=info"
     volumes:
       - .:/code
@@ -81,7 +81,7 @@ services:
       - dj_network
     env_file:
       - .env
-    restart: always
+    restart: no
 
 volumes:
   postgres_data:

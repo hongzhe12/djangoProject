@@ -39,4 +39,5 @@ static/admin/*
 
 celery*
 djangoProject/__pycache__/*
-djangoProject/__pycache__/__init__.cpython-39.pyc
+*.pyc
+__pycache__/
