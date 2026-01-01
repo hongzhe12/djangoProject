@@ -1,0 +1,63 @@
+# .github/workflows/build-docker.yml
+name: 构建 Docker 镜像
+
+# 触发条件：推送到 master 分支或创建 Pull Request 到 master 分支时运行
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 步骤1：拉取代码仓库
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      # 步骤2：设置 Docker Buildx（优化于构建多平台镜像）
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 步骤3：登录到 Docker Hub（如果需要推送镜像，需在 GitHub Secrets 中配置 DOCKER_HUB_USERNAME 和 DOCKER_HUB_ACCESS_TOKEN）
+      - name: 登录到 Docker Hub
+        if: github.event_name != 'pull_request'  # PR 时不推送镜像
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      # 步骤4：构建并推送web服务镜像
+      - name: 构建并推送 web 镜像
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}  # 仅在推送时上传镜像
+          # 关键修改：PR场景（push=false）时，加--load参数把镜像加载到本地；推送场景不需要（push和load不能同时用）
+          load: ${{ github.event_name == 'pull_request' }}
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/djangoproject-web:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/djangoproject-web:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 步骤5：验证镜像构建结果（分场景检查）
+      - name: 检查构建的镜像
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # PR场景：本地有镜像，直接查本地
+            echo "=== 检查本地构建的镜像 ==="
+            docker images | grep djangoproject-web
+            # 额外校验：检查镜像是否能正常解析（更严谨）
+            docker image inspect ${{ secrets.DOCKER_HUB_USERNAME }}/djangoproject-web:latest > /dev/null 2>&1
+            echo "✅ PR场景：本地镜像构建成功"
+          else
+            # 推送场景：本地无镜像，检查远程仓库是否存在该镜像
+            echo "=== 检查远程Docker Hub镜像 ==="
+            # 用buildx imagetools检查远程镜像（需要提前登录）
+            docker buildx imagetools inspect ${{ secrets.DOCKER_HUB_USERNAME }}/djangoproject-web:latest > /dev/null 2>&1
+            echo "✅ 推送场景：远程镜像推送成功"
+          fi
