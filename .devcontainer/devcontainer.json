@@ -1,0 +1,8 @@
+{
+  "name": "djangoProject Dev Container",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "web",
+  "workspaceFolder": "/code",
+  "forwardPorts": [8000],
+  "shutdownAction": "stopCompose"
+}
