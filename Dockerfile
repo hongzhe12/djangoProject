@@ -11,8 +11,8 @@ COPY . .
 
 
 # 在线安装Python依赖
-RUN pip install uv -i http://pypi.doubanio.com/simple/
-RUN uv pip install --system --no-cache-dir -r requirements.txt -i http://pypi.doubanio.com/simple/
+RUN pip install uv
+RUN uv pip install --system --no-cache-dir -r requirements.txt
 
 # 离线安装Python依赖
 # RUN pip install --no-index --find-links=/code/python_packages/ -r requirements.txt
