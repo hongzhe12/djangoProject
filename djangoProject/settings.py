@@ -154,7 +154,7 @@ else:
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = ('*')
-CSRF_TRUSTED_ORIGINS = ['http://192.168.64.128:8000']
+CSRF_TRUSTED_ORIGINS = ['http://192.168.204.128:80','https://192.168.204.128']
 CSRF_COOKIE_SECURE = True
 
 # ==================== 默认主键字段类型配置 ====================

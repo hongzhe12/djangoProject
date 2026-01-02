@@ -49,6 +49,9 @@ sudo service nginx status
 - 有域名：使用您的正式域名
 - 无域名：使用Nginx所在机器的IP地址
 
+### 4. 添加跨域访问白名单
+编辑`settings.py`的`CSRF_TRUSTED_ORIGINS`变量，添加你的域名，例如：https://admin.example.com
+
 ## 项目部署
 
 ### 启动服务
@@ -60,9 +63,12 @@ docker compose up -d
 
 ### 访问地址
 
-项目启动成功后，可通过以下地址访问服务：
+项目启动成功后，可通过以下地址访问管理后台（账号admin，密码1234）：
 ```
-https://域名/o/app/mailbox/email/
+# 管理后台
+https://域名/o/app/admin/
+# 例如
+https://192.168.204.128/o/app/admin/
 ```
 ### 启动多套环境
 ```bash
