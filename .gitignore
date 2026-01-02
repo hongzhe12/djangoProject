@@ -30,6 +30,7 @@ app/migrations/*
 static/admin/*
 *.sqlite3
 *.log
+djangoProject/__pycache__/
 
 # IDE
 .vscode/
