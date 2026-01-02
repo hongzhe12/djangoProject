@@ -64,6 +64,37 @@ docker compose up -d
 ```
 https://域名/o/app/mailbox/email/
 ```
+### 启动多套环境
+```bash
+# 切换另一个目录
+mkdir -p /home/pre/djangoProject/ && cd /home/pre/djangoProject/
+# 克隆项目
+git clone https://github.com/hongzhe12/djangoProject.git
+
+
+# 修改配置文件
+1. 修改.env文件，修改访问路径前缀，修改为你自己需要的，例如 /t/baidu/ 
+2. 修改.env文件，修改服务名称，例如 app2 必须唯一，否则会冲突服务无法启动
+3. 修改.env文件，修改服务端口，例如 8081，必须唯一，否则会冲突服务无法启动
+
+# 下面是一个例子
+
+# .env
+POSTGRES_USER=dev
+POSTGRES_PASSWORD=password
+POSTGRES_DB=dev
+# docker配置
+CONTAINER_NAME=app2
+PORT=9000
+# django配置
+BASE_URL=/t/app/
+STATIC_URL=/t/app/static/
+
+# 启动服务（推荐指定名称）
+docker-compose -p myapp_pre up -d
+
+
+```
 
 
 ## 常用管理命令
