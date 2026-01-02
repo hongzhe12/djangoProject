@@ -1,8 +1,6 @@
-# Django项目README.md优化
-
 ## 项目概述
 
-这是一个基于Docker容器化的Django项目，集成了Celery异步任务队列和Nginx反向代理，支持通过HTTPS访问Django Admin管理后台。
+这是一个基于Docker容器化的Django基座架，用于快速搭建Django项目。
 
 ## 环境准备
 
@@ -22,6 +20,29 @@ mkdir -p /etc/nginx/ssl/ && cd /etc/nginx/ssl/ && openssl req -x509 -newkey rsa:
 - `etc/nginx/conf.d` 目录下的两个配置文件
 - `etc/nginx/nginx.conf` 主配置文件
 
+```bash
+# 备份当前的nginx配置
+sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup.$(date +%Y%m%d_%H%M%S)
+sudo cp -r /etc/nginx/conf.d/ /etc/nginx/conf.d.backup.$(date +%Y%m%d_%H%M%S)
+
+
+# 替换主配置文件
+sudo cp /root/djangoProject/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+
+# 替换conf.d目录下的文件
+sudo cp /root/djangoProject/etc/nginx/conf.d/nginx.conf /etc/nginx/conf.d/
+sudo cp /root/djangoProject/etc/nginx/conf.d/upstream_apps.conf /etc/nginx/conf.d/
+
+# 检查nginx配置文件
+sudo nginx -t
+
+# 重启nginx
+sudo service nginx restart
+
+# 检查nginx运行状态
+sudo service nginx status
+```
+
 ### 3. 修改域名配置
 
 编辑 `etc/nginx/conf.d/nginx.conf` 文件，修改 `server_name` 为：
@@ -39,7 +60,7 @@ docker compose up -d
 
 ### 访问地址
 
-项目启动成功后，可通过以下地址访问Django Admin：
+项目启动成功后，可通过以下地址访问服务：
 ```
 https://域名/o/app/mailbox/email/
 ```
