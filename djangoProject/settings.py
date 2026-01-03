@@ -9,11 +9,14 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+
 import os
 from pathlib import Path
-from celery.schedules import crontab 
+from celery.schedules import crontab
+
 # ==================== svg图标加载问题 ====================
 import mimetypes
+
 mimetypes.add_type("image/svg+xml", ".svg", True)
 mimetypes.add_type("image/svg+xml", ".svgz", True)
 
@@ -26,82 +29,81 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ustm8i=ze@9en0dknu4o3-k$o51$^)pz_^irj2hwebixayi!0x'
+SECRET_KEY = "django-insecure-ustm8i=ze@9en0dknu4o3-k$o51$^)pz_^irj2hwebixayi!0x"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = False  # 切换为生产环境
 
 ALLOWED_HOSTS = ["*"]
 
 # ==================== 应用程序定义 ====================
 # Application definition
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_mailbox',
-    'django_celery_beat',
-    'django_celery_results',
-    'rest_framework',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django_celery_beat",
+    "django_celery_results",
+    "rest_framework",
 ]
 
 # ==================== 中间件配置 ====================
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 # ==================== URL 配置 ====================
-ROOT_URLCONF = 'djangoProject.urls'
+ROOT_URLCONF = "djangoProject.urls"
 
 # ==================== 模板配置 ====================
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
 # ==================== WSGI 应用配置 ====================
-WSGI_APPLICATION = 'djangoProject.wsgi.application'
+WSGI_APPLICATION = "djangoProject.wsgi.application"
 
 # ==================== 数据库配置 ====================
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 if DEBUG:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 else:
     # 数据库配置
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ['POSTGRES_DB'],
-            'HOST': 'postgres',
-            'PORT': 5432,
-            'USER': os.environ['POSTGRES_USER'],
-            'PASSWORD': os.environ['POSTGRES_PASSWORD']
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ["POSTGRES_DB"],
+            "HOST": "postgres",
+            "PORT": 5432,
+            "USER": os.environ["POSTGRES_USER"],
+            "PASSWORD": os.environ["POSTGRES_PASSWORD"],
         }
     }
 
@@ -110,16 +112,16 @@ else:
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -128,8 +130,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 # 国际化配置（中文设置）
-LANGUAGE_CODE = 'zh-hans'  # 中文设置
-TIME_ZONE = 'Asia/Shanghai'  # 中国时区
+LANGUAGE_CODE = "zh-hans"  # 中文设置
+TIME_ZONE = "Asia/Shanghai"  # 中国时区
 USE_I18N = True  # 启用国际化
 USE_L10N = True  # 启用本地化
 USE_TZ = True  # 启用时区支持
@@ -137,30 +139,32 @@ USE_TZ = True  # 启用时区支持
 # ==================== 静态文件配置 ====================
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-STATIC_URL = 'static/'
 
 if DEBUG:
     # 开发模式下文件服务配置
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, "static"),
+        os.path.join(BASE_DIR, "media"),
     ]
 else:
     # 生产模式下文件服务配置
     # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-    STATIC_ROOT = '/var/www/django_project/static/'
+    STATIC_ROOT = "/var/www/django_project/static/"
+    MEDIA_ROOT = "/var/www/django_project/media/"
+
 
 # ==================== 跨域和 CSRF 配置 ====================
 # 允许所有源进行跨域请求
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = ('*')
-CSRF_TRUSTED_ORIGINS = ['http://192.168.204.128:80','https://192.168.204.128']
+CORS_ALLOW_HEADERS = "*"
+CSRF_TRUSTED_ORIGINS = []
 CSRF_COOKIE_SECURE = True
 
 # ==================== 默认主键字段类型配置 ====================
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ==================== Celery 配置 ====================
 # Celery 消息代理配置 - 使用Redis作为任务队列
@@ -175,12 +179,12 @@ USE_TZ = True  # 启用Django的时区支持，确保时间感知(aware)
 CELERY_RESULT_BACKEND = "django-db"  # 使用Django数据库存储任务结果
 
 # 消息序列化配置
-CELERY_ACCEPT_CONTENT = ['application/json']  # 只接受JSON格式的消息
-CELERY_TASK_SERIALIZER = 'json'  # 任务序列化格式
-CELERY_RESULT_SERIALIZER = 'json'  # 结果序列化格式
+CELERY_ACCEPT_CONTENT = ["application/json"]  # 只接受JSON格式的消息
+CELERY_TASK_SERIALIZER = "json"  # 任务序列化格式
+CELERY_RESULT_SERIALIZER = "json"  # 结果序列化格式
 
 # 任务执行控制配置
-CELERY_TASK_TIME_LIMIT = 60*10  # 单个任务最大执行时间(秒)，超时自动终止
+CELERY_TASK_TIME_LIMIT = 60 * 10  # 单个任务最大执行时间(秒)，超时自动终止
 # CELERY_TASK_ANNOTATIONS = {
 #     'tasks.add': {
 #         'rate_limit': '10/s'  # 对add任务限流，每秒最多执行10次
@@ -194,7 +198,7 @@ CELERY_TASK_TIME_LIMIT = 60*10  # 单个任务最大执行时间(秒)，超时�
 #     'send-daily-report': {
 #         'task': 'django_mailbox.tasks.send_email',
 #         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
-#         'args': ("每日报告",) 
+#         'args': ("每日报告",)
 #     },
 # }
 
@@ -202,7 +206,7 @@ CELERY_TASK_TIME_LIMIT = 60*10  # 单个任务最大执行时间(秒)，超时�
 #     'send-daily-report': {
 #         'task': 'django_mailbox.tasks.get_sparkai_response_task',
 #         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
-#         'args': ("AI对话",) 
+#         'args': ("AI对话",)
 #     },
 # }
 
@@ -210,7 +214,7 @@ CELERY_TASK_TIME_LIMIT = 60*10  # 单个任务最大执行时间(秒)，超时�
 CELERY_WORKER_CONCURRENCY = 4  # Worker并发数，默认是CPU核心数
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # 预取任务数量
 CELERY_TASK_TRACK_STARTED = True  # 跟踪任务启动状态
-CELERY_TASK_DEFAULT_QUEUE = 'default'  # 默认队列名称
+CELERY_TASK_DEFAULT_QUEUE = "default"  # 默认队列名称
 
 # ==================== 日志配置 ====================
 import logging.config
@@ -218,66 +222,63 @@ import logging.config
 # 开发环境日志配置
 if DEBUG:
     LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-                'style': '{',
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "verbose": {
+                "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+                "style": "{",
             },
-            'simple': {
-                'format': '{levelname} {message}',
-                'style': '{',
-            },
-        },
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-                'formatter': 'simple'
+            "simple": {
+                "format": "{levelname} {message}",
+                "style": "{",
             },
         },
-        'root': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+        "handlers": {
+            "console": {"class": "logging.StreamHandler", "formatter": "simple"},
         },
-        'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-                'propagate': False,
+        "root": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
+        "loggers": {
+            "django": {
+                "handlers": ["console"],
+                "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+                "propagate": False,
             },
         },
     }
 # 生产环境日志配置
 else:
     LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-                'style': '{',
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "verbose": {
+                "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+                "style": "{",
             },
         },
-        'handlers': {
-            'file': {
-                'level': 'INFO',
-                'class': 'logging.handlers.RotatingFileHandler',
-                'filename': os.path.join(BASE_DIR, 'django.log'),
-                'maxBytes': 1024 * 1024 * 5,  # 5 MB
-                'backupCount': 5,
-                'formatter': 'verbose',
+        "handlers": {
+            "file": {
+                "level": "INFO",
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": os.path.join(BASE_DIR, "django.log"),
+                "maxBytes": 1024 * 1024 * 5,  # 5 MB
+                "backupCount": 5,
+                "formatter": "verbose",
             },
         },
-        'root': {
-            'handlers': ['file'],
-            'level': 'INFO',
+        "root": {
+            "handlers": ["file"],
+            "level": "INFO",
         },
-        'loggers': {
-            'django': {
-                'handlers': ['file'],
-                'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-                'propagate': False,
+        "loggers": {
+            "django": {
+                "handlers": ["file"],
+                "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+                "propagate": False,
             },
         },
     }
@@ -286,23 +287,39 @@ else:
 logging.config.dictConfig(LOGGING)
 
 # ==============================配置子路径=======================================
-BASE_URL = os.getenv('BASE_URL')              # nginx location路径: /app/
-STATIC_URL = os.getenv('STATIC_URL')          # nginx location路径: /app/static/
+BASE_URL = os.getenv("BASE_URL")  # nginx location路径: /app/
+STATIC_URL = os.getenv("STATIC_URL")  # nginx location路径: /app/static/
+MEDIA_URL = os.getenv("MEDIA_URL")  # nginx location路径: /app/media/
 
 # ==============================redis缓存=======================================
 CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/0'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'SOCKET_CONNECT_TIMEOUT': 5,
-            'SOCKET_TIMEOUT': 5,
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://redis:6379/0"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 5,
+            "SOCKET_TIMEOUT": 5,
         },
-        'KEY_PREFIX': 'django_cache',
+        "KEY_PREFIX": "django_cache",
     }
 }
 
 # 会话也可以使用Redis（可选）
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+
+# 导入本地settings
+try:
+    from .local_settings import INSTALLED_APPS as local_apps
+    from .local_settings import CSRF_TRUSTED_ORIGINS as local_csrf_origins
+    from .local_settings import DEBUG as local_debug
+
+    INSTALLED_APPS += local_apps
+    CSRF_TRUSTED_ORIGINS += local_csrf_origins
+    DEBUG = local_debug
+
+    print("Loaded local_settings.py")
+except ImportError:
+    pass

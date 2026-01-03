@@ -18,6 +18,7 @@ python manage.py migrate --noinput
 # 复制子应用静态文件到指定位置
 find ./ -type d -name static -exec sh -c 'rsync -av --ignore-existing "$1"/ /var/www/django_project/static/' _ {} \;
 
+find ./ -type d -name media -exec sh -c 'rsync -av --ignore-existing "$1"/ /var/www/django_project/media/' _ {} \;
 
 # 创建超级用户（如果不存在）
 echo "
@@ -29,3 +30,5 @@ else:
     print('管理员用户已存在')
 " | python manage.py shell
 
+# /var/www/django_project/media/avatars/蓝色壁纸右边.png
+# /var/www/django_project/media/avatars/%E8%93%9D%E8%89%B2%E5%A3%81%E7%BA%B8%E5%8F%B3%E8%BE%B9.png

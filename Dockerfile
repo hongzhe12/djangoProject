@@ -15,9 +15,7 @@ RUN apt update \
 
 # 安装git
 RUN apt update \
-    && apt upgrade -y \
-    && apt autoremove -y \
-    && apt clean
+    && apt install -y git --no-install-recommends
 
 # 设置工作目录
 WORKDIR /code

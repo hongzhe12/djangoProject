@@ -18,7 +18,8 @@ services:
     volumes:
       - .:/code
       - ./python_packages:/code/python_packages
-      - /var/www/django_project/static:/var/www/django_project/static
+      - /var/www/django_project/static:/var/www/django_project/static # 静态文件目录映射
+      - /var/www/django_project/media:/var/www/django_project/media # 媒体文件目录映射
     ports:
       - "${PORT}:8000"
     depends_on:

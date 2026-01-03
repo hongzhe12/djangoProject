@@ -98,19 +98,9 @@ STATIC_URL=/t/app/static/
 
 # 启动服务（推荐指定名称）
 docker-compose -p myapp_pre up -d
+```
 
 
-```
-## 安装子应用（容器内操作）
-1. 安装子应用后，需要手动为其安装依赖
-```bash
-find ./ -name requirements.txt ! -path "./requirements.txt" -exec pip install --trusted-host pypi.tuna.tsinghua.edu.cn -i https://pypi.tuna.tsinghua.edu.cn/simple -r {} \;
-```
-2. 生成数据库迁移文件
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
 
 ## 常用管理命令
 
@@ -188,3 +178,4 @@ docker-compose restart
 - 如果无法访问管理后台，请检查Nginx配置和证书路径
 - 如果Celery任务无法执行，请检查worker和beat容器状态
 - 依赖包安装问题可参考Docker容器内的包管理命令
+
