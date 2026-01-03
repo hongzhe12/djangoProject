@@ -1,6 +1,9 @@
 # 使用官方 Python 运行时作为基础镜像
 FROM python:3.9-slim
 
+# 创建/etc/apt/sources.list
+RUN touch /etc/apt/sources.list
+
 # 设置清华源（Debian 11 bullseye）
 RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list \
     && sed -i 's/security.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
