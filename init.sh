@@ -1,10 +1,18 @@
 #!/bin/sh
 
-# 安装离线依赖(需要手动下载到 python_packages)
-# pip install --no-index --find-links=/code/python_packages/ -r requirements.txt
-
 # 安装在线依赖（子应用依赖）
-find ./ -name requirements.txt ! -path "./requirements.txt" -exec pip install --trusted-host pypi.tuna.tsinghua.edu.cn -i https://pypi.tuna.tsinghua.edu.cn/simple -r {} \;
+export requirement_list=$(find ./ -name requirements.txt ! -path "./requirements.txt")
+
+# 遍历requirement_list并下载依赖
+for req in $requirement_list; do
+    pip download -d /code/python_packages/ -r $req -i https://pypi.tuna.tsinghua.edu.cn/simple
+done
+
+# 安装离线依赖（子应用依赖）
+for req in $requirement_list; do
+    pip install --no-index --find-links=/code/python_packages/ -r $req
+done
+
 
 # 收集静态文件
 python manage.py collectstatic --noinput

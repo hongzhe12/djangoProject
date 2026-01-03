@@ -58,6 +58,23 @@ sudo service nginx status
 
 ```bash
 docker compose up -d
+
+# 初始化celery任务队列
+docker exec -it app1-celery ./init.sh
+# 启动celery任务队列
+docker exec -d app1-celery sh -c \
+  "celery -A djangoProject worker --loglevel=info --concurrency=4 >> /var/log/celery.log 2>&1"
+
+# docker exec app1-celery tail -f /var/log/celery.log
+
+# 初始化beat任务队列
+docker exec -it app1-celerybeat ./init.sh
+
+# 启动celery任务队列
+docker exec -d app1-celerybeat sh -c \
+  "celery -A djangoProject beat --loglevel=info >> /var/log/celerybeat.log 2>&1"
+
+# docker exec app1-celerybeat tail -f /var/log/celerybeat.log
 ```
 
 
