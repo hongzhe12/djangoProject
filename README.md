@@ -101,7 +101,11 @@ docker-compose -p myapp_pre up -d
 
 
 ```
-
+## 常见问题
+1. 安装子应用后，需要手动为其安装依赖，可以在容器里执行下面命令
+```bash
+find ./ -name requirements.txt ! -path "./requirements.txt" -exec pip install -r {} \;
+```
 
 ## 常用管理命令
 

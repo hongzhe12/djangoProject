@@ -3,8 +3,6 @@
 # 安装离线依赖(需要手动下载到 python_packages)
 # pip install --no-index --find-links=/code/python_packages/ -r requirements.txt
 
-# 安装在线依赖(仅安装子应用的 requirements.txt)
-find ./ -name requirements.txt ! -path "./requirements.txt" -exec pip install -r {} \;
 
 # 执行数据库迁移
 python manage.py migrate --noinput
