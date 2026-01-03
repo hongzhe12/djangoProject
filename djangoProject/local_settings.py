@@ -1,3 +1,4 @@
+
 INSTALLED_APPS = [
     "django_mailbox",
     "article.apps.ArticleConfig",

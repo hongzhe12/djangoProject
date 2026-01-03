@@ -14,7 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
+import os
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from djangoProject.settings import BASE_URL
@@ -31,3 +32,15 @@ urlpatterns = [
     prefixed_path("admin/", admin.site.urls),
     prefixed_path("mailbox/", include("django_mailbox.urls")),
 ]
+
+
+
+# 导入本地urls
+try:
+    local_urls_file = os.path.join(settings.BASE_DIR, "djangoProject", "local_urls.py")
+    from .local_urls import urlpatterns as local_urlpatterns
+    urlpatterns += local_urlpatterns
+
+    print("Loaded local_urls.py")
+except ImportError:
+    pass
