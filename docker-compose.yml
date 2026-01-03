@@ -48,10 +48,10 @@ services:
   celery_worker:
     container_name: ${CONTAINER_NAME}-celery
     image: hongzhe2022/djangoproject-web:latest  # 使用拉取的镜像
-    # command: /bin/sh -c "sleep 5 && celery -A djangoProject worker --loglevel=info --concurrency=4"
-    command: tail -f /dev/null
-    volumes:
-      - .:/code
+    command: /bin/sh -c "sleep 5 && celery -A djangoProject worker --loglevel=info --concurrency=4"
+    # command: tail -f /dev/null
+    # volumes:
+    #   - .:/code
     depends_on:
       - redis
       - postgres
@@ -73,10 +73,10 @@ services:
   celery_beat:
     container_name: ${CONTAINER_NAME}-celerybeat
     image: hongzhe2022/djangoproject-web:latest  # 使用拉取的镜像
-    # command: /bin/sh -c "sleep 5 && celery -A djangoProject beat --loglevel=info"
-    command: tail -f /dev/null
-    volumes:
-      - .:/code
+    command: /bin/sh -c "sleep 5 && celery -A djangoProject beat --loglevel=info"
+    # command: tail -f /dev/null
+    # volumes:
+    #   - .:/code
     depends_on:
       - redis
       - postgres
