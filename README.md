@@ -101,10 +101,15 @@ docker-compose -p myapp_pre up -d
 
 
 ```
-## 常见问题
-1. 安装子应用后，需要手动为其安装依赖，可以在容器里执行下面命令
+## 安装子应用（容器内操作）
+1. 安装子应用后，需要手动为其安装依赖
 ```bash
-find ./ -name requirements.txt ! -path "./requirements.txt" -exec pip install -r {} \;
+find ./ -name requirements.txt ! -path "./requirements.txt" -exec pip install --trusted-host pypi.tuna.tsinghua.edu.cn -i https://pypi.tuna.tsinghua.edu.cn/simple -r {} \;
+```
+2. 生成数据库迁移文件
+```bash
+python manage.py makemigrations
+python manage.py migrate
 ```
 
 ## 常用管理命令
