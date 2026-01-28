@@ -170,54 +170,55 @@ CSRF_COOKIE_SECURE = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ==================== Celery 配置 ====================
-# Celery 消息代理配置 - 使用Redis作为任务队列
-CELERY_BROKER_URL = "redis://redis:6379/0"  # Redis服务器地址和数据库编号
+if is_celery:
+    # Celery 消息代理配置 - 使用Redis作为任务队列
+    CELERY_BROKER_URL = "redis://redis:6379/0"  # Redis服务器地址和数据库编号
 
-# 时区配置
-CELERY_TIMEZONE = TIME_ZONE  # 继承Django项目的时区设置(Asia/Shanghai)
-CELERY_ENABLE_UTC = False  # 禁用UTC时间，使用本地时区
-USE_TZ = True  # 启用Django的时区支持，确保时间感知(aware)
+    # 时区配置
+    CELERY_TIMEZONE = TIME_ZONE  # 继承Django项目的时区设置(Asia/Shanghai)
+    CELERY_ENABLE_UTC = False  # 禁用UTC时间，使用本地时区
+    USE_TZ = True  # 启用Django的时区支持，确保时间感知(aware)
 
-# 任务结果存储配置
-CELERY_RESULT_BACKEND = "django-db"  # 使用Django数据库存储任务结果
+    # 任务结果存储配置
+    CELERY_RESULT_BACKEND = "django-db"  # 使用Django数据库存储任务结果
 
-# 消息序列化配置
-CELERY_ACCEPT_CONTENT = ["application/json"]  # 只接受JSON格式的消息
-CELERY_TASK_SERIALIZER = "json"  # 任务序列化格式
-CELERY_RESULT_SERIALIZER = "json"  # 结果序列化格式
+    # 消息序列化配置
+    CELERY_ACCEPT_CONTENT = ["application/json"]  # 只接受JSON格式的消息
+    CELERY_TASK_SERIALIZER = "json"  # 任务序列化格式
+    CELERY_RESULT_SERIALIZER = "json"  # 结果序列化格式
 
-# 任务执行控制配置
-CELERY_TASK_TIME_LIMIT = 60 * 10  # 单个任务最大执行时间(秒)，超时自动终止
-# CELERY_TASK_ANNOTATIONS = {
-#     'tasks.add': {
-#         'rate_limit': '10/s'  # 对add任务限流，每秒最多执行10次
-#     }
-# }
+    # 任务执行控制配置
+    CELERY_TASK_TIME_LIMIT = 60 * 10  # 单个任务最大执行时间(秒)，超时自动终止
+    # CELERY_TASK_ANNOTATIONS = {
+    #     'tasks.add': {
+    #         'rate_limit': '10/s'  # 对add任务限流，每秒最多执行10次
+    #     }
+    # }
 
-# 定时任务调度器配置
-# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'  # 使用数据库存储调度计划
+    # 定时任务调度器配置
+    # CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'  # 使用数据库存储调度计划
 
-# CELERY_BEAT_SCHEDULE = {
-#     'send-daily-report': {
-#         'task': 'django_mailbox.tasks.send_email',
-#         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
-#         'args': ("每日报告",)
-#     },
-# }
+    # CELERY_BEAT_SCHEDULE = {
+    #     'send-daily-report': {
+    #         'task': 'django_mailbox.tasks.send_email',
+    #         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
+    #         'args': ("每日报告",)
+    #     },
+    # }
 
-# CELERY_BEAT_SCHEDULE = {
-#     'send-daily-report': {
-#         'task': 'django_mailbox.tasks.get_sparkai_response_task',
-#         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
-#         'args': ("AI对话",)
-#     },
-# }
+    # CELERY_BEAT_SCHEDULE = {
+    #     'send-daily-report': {
+    #         'task': 'django_mailbox.tasks.get_sparkai_response_task',
+    #         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
+    #         'args': ("AI对话",)
+    #     },
+    # }
 
-# 可选性能优化配置（可根据需要添加）
-CELERY_WORKER_CONCURRENCY = 4  # Worker并发数，默认是CPU核心数
-CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # 预取任务数量
-CELERY_TASK_TRACK_STARTED = True  # 跟踪任务启动状态
-CELERY_TASK_DEFAULT_QUEUE = "default"  # 默认队列名称
+    # 可选性能优化配置（可根据需要添加）
+    CELERY_WORKER_CONCURRENCY = 4  # Worker并发数，默认是CPU核心数
+    CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # 预取任务数量
+    CELERY_TASK_TRACK_STARTED = True  # 跟踪任务启动状态
+    CELERY_TASK_DEFAULT_QUEUE = "default"  # 默认队列名称
 
 # ==================== 日志配置 ====================
 import logging.config
