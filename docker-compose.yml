@@ -30,6 +30,7 @@ services:
       - .env
     environment:
       - REDIS_URL=redis://redis:6379/0  # 添加Redis连接环境变量
+    mem_limit: 512m
     command: uvicorn djangoProject.asgi:application --host 0.0.0.0 --port 8000 --workers 10 # 部署使用
     # command: tail -f /dev/null # 开发使用
     restart: no

@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
-from celery.schedules import crontab
+# from celery.schedules import crontab
 
 # ==================== svg图标加载问题 ====================
 import mimetypes
@@ -33,6 +33,7 @@ SECRET_KEY = "django-insecure-ustm8i=ze@9en0dknu4o3-k$o51$^)pz_^irj2hwebixayi!0x
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False  # 切换为生产环境
+is_celery = False # 是否启用消息队列
 
 ALLOWED_HOSTS = ["*"]
 
@@ -45,10 +46,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_celery_beat",
-    "django_celery_results",
     "rest_framework",
 ]
+
+if is_celery:
+    INSTALLED_APPS.append("django_celery_beat")
+    INSTALLED_APPS.append("django_celery_results")
 
 # ==================== 中间件配置 ====================
 MIDDLEWARE = [
@@ -310,16 +313,27 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
 
-# 导入本地settings
+# ==============================导入本地settings=======================================
 try:
-    from .local_settings import INSTALLED_APPS as local_apps
-    from .local_settings import CSRF_TRUSTED_ORIGINS as local_csrf_origins
-    from .local_settings import DEBUG as local_debug
+    # 导入local_settings，优先用模块级导入，避免原子性问题
+    from . import local_settings as local
+    # 1. 处理INSTALLED_APPS（增量扩展，校验类型）
+    if hasattr(local, 'INSTALLED_APPS') and isinstance(local.INSTALLED_APPS, list):
+        INSTALLED_APPS += local.INSTALLED_APPS
+        print(f"本地配置扩展INSTALLED_APPS：{local.INSTALLED_APPS}")
+    elif hasattr(local, 'INSTALLED_APPS'):
+        print("local_settings.INSTALLED_APPS 必须是列表类型，已忽略")
 
-    INSTALLED_APPS += local_apps
-    CSRF_TRUSTED_ORIGINS += local_csrf_origins
-    DEBUG = local_debug
+    # 2. 处理CSRF_TRUSTED_ORIGINS（增量扩展，校验类型）
+    if hasattr(local, 'CSRF_TRUSTED_ORIGINS') and isinstance(local.CSRF_TRUSTED_ORIGINS, list):
+        CSRF_TRUSTED_ORIGINS += local.CSRF_TRUSTED_ORIGINS
+        print(f"本地配置扩展CSRF_TRUSTED_ORIGINS：{local.CSRF_TRUSTED_ORIGINS}")
+    elif hasattr(local, 'CSRF_TRUSTED_ORIGINS'):
+        print("local_settings.CSRF_TRUSTED_ORIGINS 必须是列表类型，已忽略")
 
-    print("Loaded local_settings.py")
+    print("本地配置加载完成")
 except ImportError:
-    pass
+    print("未找到local_settings.py，使用默认配置")
+except Exception as e:
+    # 捕获其他异常（如类型错误），避免程序崩溃
+    print(f"加载local_settings.py失败：{str(e)}")
