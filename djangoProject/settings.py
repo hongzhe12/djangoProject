@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+
 # from celery.schedules import crontab
 
 # ==================== svg图标加载问题 ====================
@@ -33,7 +34,10 @@ SECRET_KEY = "django-insecure-ustm8i=ze@9en0dknu4o3-k$o51$^)pz_^irj2hwebixayi!0x
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False  # 切换为生产环境
-is_celery = False # 是否启用消息队列
+
+# 可配置的功能开关
+ENABLE_MESSAGE_QUEUE = os.getenv("ENABLE_MESSAGE_QUEUE", "false").lower() == "true"
+ENABLE_REDIS_CACHE = os.getenv("ENABLE_REDIS_CACHE", "false").lower() == "true"
 
 ALLOWED_HOSTS = ["*"]
 
@@ -49,7 +53,7 @@ INSTALLED_APPS = [
     "rest_framework",
 ]
 
-if is_celery:
+if ENABLE_MESSAGE_QUEUE:
     INSTALLED_APPS.append("django_celery_beat")
     INSTALLED_APPS.append("django_celery_results")
 
@@ -170,7 +174,7 @@ CSRF_COOKIE_SECURE = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ==================== Celery 配置 ====================
-if is_celery:
+if ENABLE_MESSAGE_QUEUE:
     # Celery 消息代理配置 - 使用Redis作为任务队列
     CELERY_BROKER_URL = "redis://redis:6379/0"  # Redis服务器地址和数据库编号
 
@@ -296,22 +300,28 @@ STATIC_URL = os.getenv("STATIC_URL")  # nginx location路径: /app/static/
 MEDIA_URL = os.getenv("MEDIA_URL")  # nginx location路径: /app/media/
 
 # ==============================redis缓存=======================================
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get("REDIS_URL", "redis://redis:6379/0"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "SOCKET_CONNECT_TIMEOUT": 5,
-            "SOCKET_TIMEOUT": 5,
-        },
-        "KEY_PREFIX": "django_cache",
+if ENABLE_REDIS_CACHE:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": os.environ.get("REDIS_URL", "redis://redis:6379/0"),
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "SOCKET_CONNECT_TIMEOUT": 5,
+                "SOCKET_TIMEOUT": 5,
+            },
+            "KEY_PREFIX": "django_cache",
+        }
     }
-}
-
-# 会话也可以使用Redis（可选）
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
+    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+    SESSION_CACHE_ALIAS = "default"
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "django-local-cache",
+        }
+    }
 
 
 # ==============================导入本地settings=======================================
