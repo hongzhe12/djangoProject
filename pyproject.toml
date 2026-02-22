@@ -1,0 +1,37 @@
+[project]
+name = "djangoproject"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "celery[redis]>=5.6.2",
+    "django-celery-beat>=2.8.1",
+    "django-celery-results>=2.6.0",
+    "django-cors-headers>=4.9.0",
+    "django-model-utils>=5.0.0",
+    "django-redis>=6.0.0",
+    "djangorestframework>=3.16.1",
+    "eventlet>=0.40.4",
+    "flower>=2.0.1",
+    "inflection>=0.5.1",
+    "jsonschema>=4.25.1",
+    "psycopg2-binary>=2.9.11",
+    "redis<6.5",
+    "uvicorn>=0.39.0",
+]
+
+[[tool.uv.index]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"
+
+
+[[tool.uv.index]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true  # 设为默认主索引
+
+[tool.uv.workspace]
+members = [
+    "django_mail",
+]

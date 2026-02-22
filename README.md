@@ -189,6 +189,34 @@ docker-compose exec celery_beat python -c "import sparkai; print('sparkai 导入
 docker-compose restart
 ```
 
+### 从 pyproject.toml 导出依赖
+
+```bash
+uv pip compile pyproject.toml -o requirements.txt
+```
+
+### 本地开发启动celery
+```bash
+uv run python -m celery -A djangoProject worker -l info -P solo
+```
+
+### celery 功能demo调试
+
+添加任务
+```bash
+curl -X POST http://127.0.0.1:8000/celery-demo/add/ -H "Content-Type: application/json" -d "{\"a\":1,\"b\":2}"
+
+# 响应示例
+{"task_id":"cdf6dafb-dd47-43ec-99bd-cecc8d4b5f97","state":"PENDING"}
+```
+
+查询结果
+```bash
+curl http://127.0.0.1:8000/celery-demo/status/cdf6dafb-dd47-43ec-99bd-cecc8d4b5f97/
+
+# 响应示例
+{"task_id":"cdf6dafb-dd47-43ec-99bd-cecc8d4b5f97","state":"SUCCESS","ready":true,"result":3}
+```
 
 ## 故障排查
 

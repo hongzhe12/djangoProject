@@ -9,7 +9,8 @@ def prefixed_path(route, view, base_url=BASE_URL, name=None):
     full_route = f"{base_url_stripped}/{route}" if base_url_stripped else route
     return path(full_route, view, name=name)
 
+
 urlpatterns = [
-    prefixed_path("article/", include("article.urls")),
-    prefixed_path("users/", include("users.urls")),
+    prefixed_path("django_mail/", include("django_mail.urls")),
+    prefixed_path("celery-demo/", include("celery_demo.urls")),
 ]

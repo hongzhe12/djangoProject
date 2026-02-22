@@ -56,7 +56,7 @@ def create_crontab_task():
     PeriodicTask.objects.create(
         crontab=schedule,
         name='每日邮件报告',
-        task='django_mailbox.tasks.send_daily_report',
+        task='django_mail.tasks.send_daily_report',
         args='[]',
         kwargs='{}',
         enabled=True
@@ -87,7 +87,7 @@ task.save()
 
 # 立即执行一次任务
 from celery.execute import send_task
-send_task('django_mailbox.tasks.send_daily_report')
+send_task('django_mail.tasks.send_daily_report')
 ```
 
 ## 配置建议

@@ -204,7 +204,7 @@ if ENABLE_MESSAGE_QUEUE:
 
     # CELERY_BEAT_SCHEDULE = {
     #     'send-daily-report': {
-    #         'task': 'django_mailbox.tasks.send_email',
+    #         'task': 'django_mail.tasks.send_email',
     #         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
     #         'args': ("每日报告",)
     #     },
@@ -212,7 +212,7 @@ if ENABLE_MESSAGE_QUEUE:
 
     # CELERY_BEAT_SCHEDULE = {
     #     'send-daily-report': {
-    #         'task': 'django_mailbox.tasks.get_sparkai_response_task',
+    #         'task': 'django_mail.tasks.get_sparkai_response_task',
     #         'schedule': crontab(hour=23, minute=00),  # 每天9:30执行
     #         'args': ("AI对话",)
     #     },
@@ -295,9 +295,9 @@ else:
 logging.config.dictConfig(LOGGING)
 
 # ==============================配置子路径=======================================
-BASE_URL = os.getenv("BASE_URL")  # nginx location路径: /app/
-STATIC_URL = os.getenv("STATIC_URL")  # nginx location路径: /app/static/
-MEDIA_URL = os.getenv("MEDIA_URL")  # nginx location路径: /app/media/
+BASE_URL = os.getenv("BASE_URL","")  # nginx location路径: /app/
+STATIC_URL = os.getenv("STATIC_URL","/static/")  # nginx location路径: /app/static/
+MEDIA_URL = os.getenv("MEDIA_URL","/media/")  # nginx location路径: /app/media/
 
 # ==============================redis缓存=======================================
 if ENABLE_REDIS_CACHE:
@@ -341,6 +341,14 @@ try:
         print(f"本地配置扩展CSRF_TRUSTED_ORIGINS：{local.CSRF_TRUSTED_ORIGINS}")
     elif hasattr(local, 'CSRF_TRUSTED_ORIGINS'):
         print("local_settings.CSRF_TRUSTED_ORIGINS 必须是列表类型，已忽略")
+
+    # 3. 处理Celery配置（覆盖式）
+    if hasattr(local, 'CELERY_BROKER_URL'):
+        CELERY_BROKER_URL = local.CELERY_BROKER_URL
+        print(CELERY_BROKER_URL)
+    if hasattr(local, 'CELERY_RESULT_BACKEND'):
+        CELERY_RESULT_BACKEND = local.CELERY_RESULT_BACKEND
+        print(CELERY_RESULT_BACKEND)
 
     print("本地配置加载完成")
 except ImportError:

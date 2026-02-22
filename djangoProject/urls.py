@@ -30,7 +30,6 @@ def prefixed_path(route, view, base_url=BASE_URL, name=None):
 
 urlpatterns = [
     prefixed_path("admin/", admin.site.urls),
-    prefixed_path("mailbox/", include("django_mailbox.urls")),
 ]
 
 
