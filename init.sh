@@ -15,17 +15,15 @@
 
 
 # 安装在线依赖（子应用依赖，请按照实际修改）
-uv sync -P article 
-uv sync -P django_mail 
-uv sync -P pypi_finder 
-uv sync -P questions
+# uv sync -P pypi_finder 
+# uv sync -P questions
 
 # 收集静态文件
-python manage.py collectstatic --noinput
+uv run python manage.py collectstatic --noinput
 
 # 执行数据库迁移
-python manage.py makemigrations --noinput
-python manage.py migrate --noinput
+uv run python manage.py makemigrations --noinput
+uv run python manage.py migrate --noinput
 
 # 复制基座框架静态文件到指定位置
 \cp -rf static/* /var/www/django_project/static/
@@ -42,7 +40,4 @@ if not User.objects.filter(username='admin').exists():
     print('管理员用户已创建')
 else:
     print('管理员用户已存在')
-" | python manage.py shell
-
-# /var/www/django_project/media/avatars/蓝色壁纸右边.png
-# /var/www/django_project/media/avatars/%E8%93%9D%E8%89%B2%E5%A3%81%E7%BA%B8%E5%8F%B3%E8%BE%B9.png
+" | uv run python manage.py shell
