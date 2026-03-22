@@ -85,7 +85,7 @@ docker exec -d app1-celerybeat sh -c \
 # 管理后台
 https://域名/o/app/admin/
 # 例如
-https://192.168.204.128/o/app/admin/
+http://127.0.0.1:8000/o/app/admin/
 ```
 ### 启动多套环境
 ```bash

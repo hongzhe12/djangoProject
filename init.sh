@@ -1,18 +1,24 @@
 #!/bin/sh
 
 # 安装在线依赖（子应用依赖）
-export requirement_list=$(find ./ -name requirements.txt ! -path "./requirements.txt")
+# export requirement_list=$(find ./ -name requirements.txt ! -path "./requirements.txt")
 
 # 遍历requirement_list并下载依赖
-for req in $requirement_list; do
-    pip download -d /code/python_packages/ -r $req -i https://pypi.tuna.tsinghua.edu.cn/simple
-done
+# for req in $requirement_list; do
+#     pip download -d /code/python_packages/ -r $req -i https://pypi.tuna.tsinghua.edu.cn/simple
+# done
 
 # 安装离线依赖（子应用依赖）
-for req in $requirement_list; do
-    pip install --no-index --find-links=/code/python_packages/ -r $req
-done
+# for req in $requirement_list; do
+#     pip install --no-index --find-links=/code/python_packages/ -r $req
+# done
 
+
+# 安装在线依赖（子应用依赖，请按照实际修改）
+uv sync -P article 
+uv sync -P django_mail 
+uv sync -P pypi_finder 
+uv sync -P questions
 
 # 收集静态文件
 python manage.py collectstatic --noinput
