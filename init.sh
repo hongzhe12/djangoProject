@@ -14,14 +14,13 @@
 # done
 
 
-# 安装在线依赖（子应用依赖，请按照实际修改）
-# uv sync -P pypi_finder 
-# uv sync -P questions
+# 安装在线依赖
+uv sync --all-packages
 
 # 收集静态文件
 uv run python manage.py collectstatic --noinput
 
-# 执行数据库迁移
+# 执行数据库迁移（子应用需要手动迁移）
 uv run python manage.py makemigrations --noinput
 uv run python manage.py migrate --noinput
 
