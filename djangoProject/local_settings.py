@@ -1,6 +1,7 @@
 INSTALLED_APPS = [
     "celery_demo.apps.CeleryDemoConfig",
     "django_mail",
+    "app_job",
 ]
 
 # ==================== 跨域和 CSRF 配置 ====================

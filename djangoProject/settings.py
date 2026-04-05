@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # from celery.schedules import crontab
 
@@ -33,7 +34,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-ustm8i=ze@9en0dknu4o3-k$o51$^)pz_^irj2hwebixayi!0x"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False  # 切换为生产环境
+DEBUG = True  # 切换为生产环境
 
 # 可配置的功能开关
 ENABLE_MESSAGE_QUEUE = os.getenv("ENABLE_MESSAGE_QUEUE", "false").lower() == "true"
@@ -67,6 +68,21 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+# ==================== REST_FRAMEWORK配置 ====================
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),   # 改为 30 分钟
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),      # 改为 7 天
+}
+
 
 # ==================== URL 配置 ====================
 ROOT_URLCONF = "djangoProject.urls"
@@ -295,9 +311,9 @@ else:
 logging.config.dictConfig(LOGGING)
 
 # ==============================配置子路径=======================================
-BASE_URL = os.getenv("BASE_URL","")  # nginx location路径: /app/
-STATIC_URL = os.getenv("STATIC_URL","/static/")  # nginx location路径: /app/static/
-MEDIA_URL = os.getenv("MEDIA_URL","/media/")  # nginx location路径: /app/media/
+BASE_URL = os.getenv("BASE_URL", "")  # nginx location路径: /app/
+STATIC_URL = os.getenv("STATIC_URL", "/static/")  # nginx location路径: /app/static/
+MEDIA_URL = os.getenv("MEDIA_URL", "/media/")  # nginx location路径: /app/media/
 
 # ==============================redis缓存=======================================
 if ENABLE_REDIS_CACHE:
@@ -328,6 +344,7 @@ else:
 try:
     # 导入local_settings，优先用模块级导入，避免原子性问题
     from . import local_settings as local
+
     # 1. 处理INSTALLED_APPS（增量扩展，校验类型）
     if hasattr(local, 'INSTALLED_APPS') and isinstance(local.INSTALLED_APPS, list):
         INSTALLED_APPS += local.INSTALLED_APPS
