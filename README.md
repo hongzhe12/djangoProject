@@ -39,7 +39,7 @@ uv run python manage.py runserver
 
 后台地址默认：
 
-- http://127.0.0.1:8000/admin/
+- http://127.0.0.1:8000/o/app/admin/
 
 ## 接口鉴权说明
 
@@ -63,7 +63,7 @@ uv run python manage.py runserver
 先使用用户名和密码换取 JWT：
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/token/ \
+curl -X POST http://127.0.0.1:8000/o/app/api/token/ \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"1234"}'
 ```
@@ -115,7 +115,7 @@ curl http://127.0.0.1:8000/o/app/api/test/protected/ \
 ### 携带 Token 调用普通接口
 
 ```bash
-curl http://127.0.0.1:8000/api/todos/ \
+curl http://127.0.0.1:8000/o/app/api/todos/ \
   -H "Authorization: Bearer yyy"
 ```
 
