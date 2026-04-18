@@ -9,6 +9,7 @@ dependencies = [
     "django-celery-beat>=2.8.1",
     "django-celery-results>=2.6.0",
     "django-cors-headers>=4.9.0",
+    "django-extensions>=4.1",
     "django-model-utils>=5.0.0",
     "django-redis>=6.0.0",
     "djangorestframework>=3.16.1",
@@ -35,5 +36,4 @@ default = true  # 设为默认主索引
 [tool.uv.workspace]
 members = [
     "django_mail",
-    "app_job",
 ]

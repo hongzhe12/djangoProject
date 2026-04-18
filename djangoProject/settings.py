@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "django_extensions",
+
 ]
 
 if ENABLE_MESSAGE_QUEUE:
@@ -70,18 +72,23 @@ MIDDLEWARE = [
 ]
 
 # ==================== REST_FRAMEWORK配置 ====================
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-}
+try:
+    import rest_framework_simplejwt  # noqa: F401
 
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': [
+            'rest_framework_simplejwt.authentication.JWTAuthentication',
+        ],
+    }
 
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),   # 改为 30 分钟
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),      # 改为 7 天
-}
+    SIMPLE_JWT = {
+        'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),   # 改为 30 分钟
+        'REFRESH_TOKEN_LIFETIME': timedelta(days=7),      # 改为 7 天
+    }
+except ImportError:
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': [],
+    }
 
 
 # ==================== URL 配置 ====================
