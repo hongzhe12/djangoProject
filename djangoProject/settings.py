@@ -172,10 +172,12 @@ USE_TZ = True  # 启用时区支持
 
 if DEBUG:
     # 开发模式下文件服务配置
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, "static"),
-        os.path.join(BASE_DIR, "media"),
     ]
+    if os.path.isdir(os.path.join(BASE_DIR, "media")):
+        STATICFILES_DIRS.append(os.path.join(BASE_DIR, "media"))
 else:
     # 生产模式下文件服务配置
     # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
