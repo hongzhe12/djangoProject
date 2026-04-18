@@ -1,226 +1,161 @@
-## 项目概述
+# Django 基座项目
 
-这是一个基于Docker容器化的Django基座架，用于快速搭建Django项目。
+这是一个基于 Django + DRF + Celery + Docker 的项目基座，当前已包含：
 
-## 环境准备
+- Django 管理后台
+- 邮件配置与发送模块 `django_mail`
+- Celery Demo
 
-### 1. 证书生成（如需自签证书）
+## 项目结构
+
+- `djangoProject/`：项目配置、路由、Celery 配置
+- `django_mail/`：邮件相关应用
+- `celery_demo/`：Celery 示例应用
+- `etc/nginx/`：Nginx 配置
+- `static/`：静态资源
+
+## 运行环境
+
+推荐使用 `uv` 管理 Python 依赖。
+
+安装依赖（包含子应用）、拷贝迁移静态资源：
 
 ```bash
-mkdir -p /etc/nginx/ssl/ && cd /etc/nginx/ssl/ && openssl req -x509 -newkey rsa:4096 -nodes -keyout server.key -out server.crt -days 365 -subj "/C=CN/ST=Zhejiang/L=Hangzhou/O=MyCompany/OU=IT/CN=localhost"
+./init.sh
 ```
 
-
-> **注意**：如使用正式域名，建议申请免费SSL证书，无需自签证书。
-
-### 2. Nginx配置
-
-将以下配置文件复制到Linux服务器对应目录：
-
-- `etc/nginx/conf.d` 目录下的两个配置文件
-- `etc/nginx/nginx.conf` 主配置文件
+如果只想补齐单个依赖：
 
 ```bash
-# 备份当前的nginx配置
-sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup.$(date +%Y%m%d_%H%M%S)
-sudo cp -r /etc/nginx/conf.d/ /etc/nginx/conf.d.backup.$(date +%Y%m%d_%H%M%S)
-
-
-# 替换主配置文件
-sudo cp /root/djangoProject/etc/nginx/nginx.conf /etc/nginx/nginx.conf
-
-# 替换conf.d目录下的文件
-sudo cp /root/djangoProject/etc/nginx/conf.d/nginx.conf /etc/nginx/conf.d/
-sudo cp /root/djangoProject/etc/nginx/conf.d/upstream_apps.conf /etc/nginx/conf.d/
-
-# 检查nginx配置文件
-sudo nginx -t
-
-# 重启nginx
-sudo service nginx restart
-
-# 检查nginx运行状态
-sudo service nginx status
+uv add django-extensions
 ```
 
-### 3. 修改域名配置
+## 本地启动
 
-编辑 `etc/nginx/conf.d/nginx.conf` 文件，修改 `server_name` 为：
-- 有域名：使用您的正式域名
-- 无域名：使用Nginx所在机器的IP地址
+```bash
+uv run python manage.py migrate
+uv run python manage.py runserver
+```
 
-### 4. 添加跨域访问白名单
-编辑`settings.py`的`CSRF_TRUSTED_ORIGINS`变量，添加你的域名，例如：https://admin.example.com
+后台地址默认：
 
-## 项目部署
+- http://127.0.0.1:8000/admin/
 
-### 启动服务
+## 接口鉴权说明
+
+当前项目的鉴权是基于 JWT 的，配置位置如下：
+
+- [djangoProject/settings.py](djangoProject/settings.py)：
+  - `REST_FRAMEWORK` 中启用了 `JWTAuthentication`
+  - 如果未安装 `djangorestframework-simplejwt`，项目会自动降级，不会因为导入失败而启动报错
+- [djangoProject/urls.py](djangoProject/urls.py)：
+  - 暴露了登录签发令牌接口 `api/token/`
+
+### 当前实际效果
+
+需要注意：
+
+- 目前项目只配置了“认证方式”，没有强制所有接口都必须登录
+- 如果请求里带上 JWT，DRF 会识别为已登录用户
+
+### 获取 Token
+
+先使用用户名和密码换取 JWT：
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/token/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"1234"}'
+```
+
+返回示例：
+
+```json
+{
+  "refresh": "xxx",
+  "access": "yyy"
+}
+```
+
+### `require_jwt` 装饰器
+
+项目里提供了一个简单的 JWT 鉴权装饰器：[djangoProject/common/decorators.py](djangoProject/common/decorators.py)。
+
+它的作用是：
+
+- 先用 `JWTAuthentication` 校验请求头里的 Token
+- 校验成功后，把 `request.user` 设为当前用户
+- 校验失败时，直接返回 `401` 和 `Invalid token`
+
+使用方式：
+
+```python
+from djangoProject.common.decorators import require_jwt
+
+@require_jwt
+def my_view(request):
+    ...
+```
+
+### 如何正确请求鉴权接口
+
+如果接口使用了 `require_jwt`，请求时必须先拿到 `access` token，再在请求头里携带：
+
+```bash
+curl http://127.0.0.1:8000/o/app/api/test/protected/ \
+  -H "Authorization: Bearer 你的access_token"
+```
+
+返回规则：
+
+- 不带 Token：返回 `401`
+- Token 无效：返回 `401`
+- Token 有效：返回 `200`
+
+### 携带 Token 调用普通接口
+
+```bash
+curl http://127.0.0.1:8000/api/todos/ \
+  -H "Authorization: Bearer yyy"
+```
+
+## Nginx 与部署
+
+如果使用 Nginx 反向代理，请把相关配置放到 `etc/nginx/`，并根据实际域名修改：
+
+- `server_name`
+- `BASE_URL`
+- `STATIC_URL`
+- `CSRF_TRUSTED_ORIGINS`
+
+启动容器：
 
 ```bash
 docker compose up -d
-
-# 初始化celery任务队列
-docker exec -it app1-celery ./init.sh
-# 启动celery任务队列
-docker exec -d app1-celery sh -c \
-  "celery -A djangoProject worker --loglevel=info --concurrency=4 >> /var/log/celery.log 2>&1"
-
-# docker exec app1-celery tail -f /var/log/celery.log
-
-# 初始化beat任务队列
-docker exec -it app1-celerybeat ./init.sh
-
-# 启动celery任务队列
-docker exec -d app1-celerybeat sh -c \
-  "celery -A djangoProject beat --loglevel=info >> /var/log/celerybeat.log 2>&1"
-
-# docker exec app1-celerybeat tail -f /var/log/celerybeat.log
 ```
-
-
-### 访问地址
-
-项目启动成功后，可通过以下地址访问管理后台（账号admin，密码1234）：
-```
-# 管理后台
-https://域名/o/app/admin/
-# 例如
-http://127.0.0.1:8000/o/app/admin/
-```
-### 启动多套环境
-```bash
-# 切换另一个目录
-mkdir -p /home/pre/djangoProject/ && cd /home/pre/djangoProject/
-# 克隆项目
-git clone https://github.com/hongzhe12/djangoProject.git
-
-
-# 修改配置文件
-1. 修改.env文件，修改访问路径前缀，修改为你自己需要的，例如 /t/baidu/ 
-2. 修改.env文件，修改服务名称，例如 app2 必须唯一，否则会冲突服务无法启动
-3. 修改.env文件，修改服务端口，例如 8081，必须唯一，否则会冲突服务无法启动
-
-# 下面是一个例子
-
-# .env
-POSTGRES_USER=dev
-POSTGRES_PASSWORD=password
-POSTGRES_DB=dev
-# docker配置
-CONTAINER_NAME=app2
-PORT=9000
-# django配置
-BASE_URL=/t/app/
-STATIC_URL=/t/app/static/
-
-# 启动服务（推荐指定名称）
-docker-compose -p myapp_pre up -d
-```
-
-
 
 ## 常用管理命令
 
-### Django服务管理
-
 ```bash
-# 检查Django项目配置
-docker-compose exec web python manage.py check
+# 检查项目配置
+uv run python manage.py check
 
-# 安装项目依赖
-docker-compose exec web pip install --no-index --find-links=python_packages -r requirements.txt
+# 查看路由
+uv run python manage.py show_urls
 
-# 验证spark-ai-python包安装
-docker-compose exec web pip list | grep spark-ai-python
+# 生成迁移
+uv run python manage.py makemigrations
 
-# 测试sparkai模块导入
-docker-compose exec web python -c "import sparkai; print('sparkai 导入成功')"
-
-# 重启Django服务
-docker-compose restart web
+# 执行迁移
+uv run python manage.py migrate
 ```
 
+## 常见问题
 
-### Celery任务队列管理
+### 1. 为什么 `api/token/` 不可用？
 
-#### 任务注册验证
+请确认已经安装 `djangorestframework-simplejwt`。
 
-```bash
-# 查看已注册的Celery任务
-docker exec mysite-celery celery -A djangoProject inspect registered
+### 2. 为什么项目能启动，但某些认证功能不存在？
 
-# 检查Celery状态
-docker exec mysite-celery celery -A djangoProject control inspect
-```
-
-
-#### 依赖安装（Celery Worker）
-
-```bash
-# 安装依赖包
-docker-compose exec celery_worker pip install --no-index --find-links=python_packages -r requirements.txt
-
-# 验证spark-ai-python包
-docker-compose exec celery_worker pip list | grep spark-ai-python
-
-# 测试模块导入
-docker-compose exec celery_worker python -c "import sparkai; print('sparkai 导入成功')"
-```
-
-
-#### 依赖安装（Celery Beat）
-
-```bash
-# 安装依赖包
-docker-compose exec celery_beat pip install --no-index --find-links=python_packages -r requirements.txt
-
-# 验证spark-ai-python包
-docker-compose exec celery_beat pip list | grep spark-ai-python
-
-# 测试模块导入
-docker-compose exec celery_beat python -c "import sparkai; print('sparkai 导入成功')"
-```
-
-
-### 服务重启
-
-```bash
-# 重启所有服务以使新注册的任务生效
-docker-compose restart
-```
-
-### 从 pyproject.toml 导出依赖
-
-```bash
-uv pip compile pyproject.toml -o requirements.txt
-```
-
-### 本地开发启动celery
-```bash
-uv run python -m celery -A djangoProject worker -l info -P solo
-```
-
-### celery 功能demo调试
-
-添加任务
-```bash
-curl -X POST http://127.0.0.1:8000/celery-demo/add/ -H "Content-Type: application/json" -d "{\"a\":1,\"b\":2}"
-
-# 响应示例
-{"task_id":"cdf6dafb-dd47-43ec-99bd-cecc8d4b5f97","state":"PENDING"}
-```
-
-查询结果
-```bash
-curl http://127.0.0.1:8000/celery-demo/status/cdf6dafb-dd47-43ec-99bd-cecc8d4b5f97/
-
-# 响应示例
-{"task_id":"cdf6dafb-dd47-43ec-99bd-cecc8d4b5f97","state":"SUCCESS","ready":true,"result":3}
-```
-
-## 故障排查
-
-- 如果无法访问管理后台，请检查Nginx配置和证书路径
-- 如果Celery任务无法执行，请检查worker和beat容器状态
-- 依赖包安装问题可参考Docker容器内的包管理命令
-
+因为当前代码对 `simplejwt` 做了可选导入，避免在轻量环境中直接报错。
